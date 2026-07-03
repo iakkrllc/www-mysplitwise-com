@@ -9,11 +9,19 @@ import { Button } from "../ui/button";
 import { ExpenseList } from "../expense-list";
 import { FriendInsights } from "../charts/friend-insights";
 import { PayMenu } from "../pay-menu";
-import { Plus, Scale } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "../ui/dropdown-menu";
+import { Plus, Scale, MoreVertical, UserMinus } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 
 export function FriendView({ friendId }: { friendId: string }) {
-  const { state, currentUser, getUser, baseExpenses } = useStore();
+  const { state, currentUser, getUser, baseExpenses, removeFriend, setView } =
+    useStore();
   const { openModal } = useUI();
   const friend = getUser(friendId);
   const base = state.baseCurrency;
@@ -88,6 +96,37 @@ export function FriendView({ friendId }: { friendId: string }) {
           >
             <Plus className="h-4 w-4" /> Add expense
           </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="icon" aria-label="Friend options">
+                <MoreVertical className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem
+                className="text-destructive focus:text-destructive"
+                onClick={() => {
+                  if (!settled) {
+                    toast.error(
+                      `Settle up with ${friend.name.split(" ")[0]} before removing them`,
+                    );
+                    return;
+                  }
+                  if (
+                    !window.confirm(
+                      `Remove ${friend.name} from your friends? This can't be undone.`,
+                    )
+                  )
+                    return;
+                  removeFriend(friendId);
+                  toast.success(`${friend.name} removed`);
+                  setView({ type: "friends" });
+                }}
+              >
+                <UserMinus className="mr-2 h-4 w-4" /> Remove friend
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
 

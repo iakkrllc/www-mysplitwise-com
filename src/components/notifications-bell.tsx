@@ -5,6 +5,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 import { useStore } from "@/lib/store";
 import { useUI } from "@/lib/ui-store";
 import { balanceBetween, formatMoney } from "@/lib/calculations";
+import { todayISO, parseLocalDate } from "@/lib/dates";
 import {
   Bell,
   CalendarClock,
@@ -27,12 +28,9 @@ interface Notif {
   action?: { label: string; run: () => void };
 }
 
-function todayISO() {
-  return new Date().toISOString().slice(0, 10);
-}
 function daysUntil(dateStr: string) {
-  const a = new Date(`${todayISO()}T00:00:00`).getTime();
-  const b = new Date(`${dateStr}T00:00:00`).getTime();
+  const a = parseLocalDate(todayISO()).getTime();
+  const b = parseLocalDate(dateStr).getTime();
   return Math.round((b - a) / 86400000);
 }
 function dueLabel(dateStr: string) {

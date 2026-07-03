@@ -21,6 +21,7 @@ import { Button } from "../ui/button";
 import { useStore } from "@/lib/store";
 import { useUI, type Modal } from "@/lib/ui-store";
 import { balanceBetween, formatMoney, round2 } from "@/lib/calculations";
+import { todayISO } from "@/lib/dates";
 import { getCurrency } from "@/lib/currency";
 import type { Expense, PaymentMethod } from "@/lib/types";
 import { UserAvatar } from "../user-avatar";
@@ -109,7 +110,7 @@ function SettleForm({
   const [amount, setAmount] = useState(
     String(suggest(modal.fromId ?? currentUser.id, defaultTo) || ""),
   );
-  const [date, setDate] = useState(new Date().toISOString().slice(0, 10));
+  const [date, setDate] = useState(todayISO());
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("cash");
 
   const amountNum = Number.parseFloat(amount) || 0;

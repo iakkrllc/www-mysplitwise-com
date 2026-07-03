@@ -6,11 +6,12 @@ import { useStore } from "@/lib/store";
 import { useUI } from "@/lib/ui-store";
 import { CategoryIcon } from "./category-icon";
 import { formatMoney } from "@/lib/calculations";
+import { parseLocalDate } from "@/lib/dates";
 import { cn } from "@/lib/utils";
 import { ArrowRightLeft } from "lucide-react";
 
 function monthKey(date: string) {
-  const d = new Date(date);
+  const d = parseLocalDate(date);
   return d.toLocaleDateString("en-US", { month: "long", year: "numeric" });
 }
 
@@ -30,7 +31,7 @@ export function ExpenseRow({ e }: { e: Expense }) {
   const { openModal } = useUI();
   const nameOf = (id: string) => getUser(id)?.name ?? "Someone";
 
-  const d = new Date(e.date);
+  const d = parseLocalDate(e.date);
   const month = d.toLocaleDateString("en-US", { month: "short" });
   const day = d.getDate();
 

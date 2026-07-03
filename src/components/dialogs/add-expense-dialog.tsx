@@ -28,6 +28,7 @@ import { useUI, type Modal } from "@/lib/ui-store";
 import { CATEGORIES } from "@/lib/categories";
 import { CURRENCIES, getCurrency } from "@/lib/currency";
 import { round2, formatMoney } from "@/lib/calculations";
+import { todayISO } from "@/lib/dates";
 import { splitEqual, splitByPercent, splitByShares } from "@/lib/split";
 import { compressImage } from "@/lib/image";
 import type {
@@ -64,10 +65,6 @@ const REPEAT_OPTIONS: { id: Frequency | "none"; label: string }[] = [
   { id: "monthly", label: "Monthly" },
   { id: "yearly", label: "Yearly" },
 ];
-
-function todayStr() {
-  return new Date().toISOString().slice(0, 10);
-}
 
 export function AddExpenseDialog() {
   const { modal, closeModal } = useUI();
@@ -109,7 +106,7 @@ function AddExpenseForm({
     editing?.currency ?? state.baseCurrency,
   );
   const [category, setCategory] = useState(editing?.category ?? "general");
-  const [date, setDate] = useState(editing?.date.slice(0, 10) ?? todayStr());
+  const [date, setDate] = useState(editing?.date.slice(0, 10) ?? todayISO());
   const [groupId, setGroupId] = useState<string | null>(
     editing?.groupId ?? modal.groupId ?? null,
   );

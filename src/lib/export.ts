@@ -123,8 +123,8 @@ export async function exportExpensesPDF(expenses: Expense[], h: ExportHelpers) {
       formatMoney(r.yourNetBase, h.baseCurrency),
     ]),
     styles: { fontSize: 8, cellPadding: 2 },
-    headStyles: { fillColor: [91, 197, 167], textColor: 255, fontStyle: "bold" },
-    alternateRowStyles: { fillColor: [246, 250, 249] },
+    headStyles: { fillColor: [124, 58, 237], textColor: 255, fontStyle: "bold" },
+    alternateRowStyles: { fillColor: [248, 246, 253] },
     columnStyles: { 5: { halign: "right" }, 6: { halign: "right" } },
   });
 
@@ -170,8 +170,8 @@ export async function exportBalancesPDF(
       formatMoney(Math.abs(r.balance), baseCurrency),
     ]),
     styles: { fontSize: 10, cellPadding: 3 },
-    headStyles: { fillColor: [91, 197, 167], textColor: 255, fontStyle: "bold" },
-    alternateRowStyles: { fillColor: [246, 250, 249] },
+    headStyles: { fillColor: [124, 58, 237], textColor: 255, fontStyle: "bold" },
+    alternateRowStyles: { fillColor: [248, 246, 253] },
     columnStyles: { 2: { halign: "right" } },
   });
 

@@ -11,6 +11,7 @@ import {
 import { makeBlankState } from "./sample-data";
 import { useAuth } from "./auth-store";
 import { round2, toBaseExpenses } from "./calculations";
+import { toISODateLocal, todayISO, parseLocalDate } from "./dates";
 import type {
   AppState,
   Expense,
@@ -32,16 +33,12 @@ export function uid(prefix = "id_"): string {
   );
 }
 
-function todayISO(): string {
-  return new Date().toISOString().slice(0, 10);
-}
-
 export function advanceDate(dateStr: string, freq: Frequency): string {
-  const d = new Date(`${dateStr}T00:00:00`);
+  const d = parseLocalDate(dateStr);
   if (freq === "weekly") d.setDate(d.getDate() + 7);
   else if (freq === "monthly") d.setMonth(d.getMonth() + 1);
   else d.setFullYear(d.getFullYear() + 1);
-  return d.toISOString().slice(0, 10);
+  return toISODateLocal(d);
 }
 
 /** Backfill fields for state saved by an older version. */
