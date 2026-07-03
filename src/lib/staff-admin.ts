@@ -3,11 +3,12 @@ import { DEPARTMENT_DEFAULTS, type PermissionKey, type StaffMember } from "./per
 
 export async function getStaffMember(userId: string): Promise<StaffMember | null> {
   const supabase = getSupabaseAdmin();
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from("staff_members")
     .select("*")
     .eq("user_id", userId)
     .maybeSingle();
+  if (error) throw new Error(`getStaffMember: ${error.message}`);
   return data as StaffMember | null;
 }
 
