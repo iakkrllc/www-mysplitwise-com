@@ -25,6 +25,8 @@ import {
   Users,
   Repeat,
   SendHorizontal,
+  Banknote,
+  CreditCard,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -118,6 +120,18 @@ export function ExpenseDetailDialog() {
               {!expense.isSettlement && (
                 <div className="flex items-center gap-2 text-muted-foreground">
                   <span>Category: {getCategory(expense.category).name}</span>
+                </div>
+              )}
+              {expense.paymentMethod && (
+                <div className="flex items-center gap-2 text-muted-foreground">
+                  {expense.paymentMethod === "cash" ? (
+                    <Banknote className="h-4 w-4" />
+                  ) : (
+                    <CreditCard className="h-4 w-4" />
+                  )}
+                  <span>
+                    Paid with {expense.paymentMethod === "cash" ? "cash" : "card"}
+                  </span>
                 </div>
               )}
             </div>

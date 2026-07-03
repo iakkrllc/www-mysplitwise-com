@@ -118,6 +118,9 @@ function AddExpenseForm({
   );
   const [notes, setNotes] = useState(editing?.notes ?? "");
   const [uploading, setUploading] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState<"cash" | "card">(
+    editing?.paymentMethod ?? "card",
+  );
   const fileRef = useRef<HTMLInputElement>(null);
 
   const initialParticipants = (): string[] => {
@@ -412,6 +415,7 @@ function AddExpenseForm({
         shares,
         receiptUrl,
         notes: notes.trim() || undefined,
+        paymentMethod,
         ...itemFields,
       });
       toast.success("Expense updated");
@@ -428,6 +432,7 @@ function AddExpenseForm({
         isSettlement: false,
         receiptUrl,
         notes: notes.trim() || undefined,
+        paymentMethod,
         ...itemFields,
       });
       if (repeat !== "none") {
@@ -539,6 +544,58 @@ function AddExpenseForm({
           )}
         </div>
 
+        {/* Paid by + how */}
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <div className="space-y-1.5">
+            <Label className="text-xs font-bold uppercase tracking-wide text-muted-foreground">
+              Paid by
+            </Label>
+            <Select value={payerId} onValueChange={setPayerId}>
+              <SelectTrigger className="h-12 text-base font-bold">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {participantIds.map((id) => {
+                  const u = getUser(id);
+                  if (!u) return null;
+                  return (
+                    <SelectItem key={id} value={id}>
+                      {id === currentUser.id ? "You" : u.name}
+                    </SelectItem>
+                  );
+                })}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-1.5">
+            <Label className="text-xs font-bold uppercase tracking-wide text-muted-foreground">
+              How was this paid
+            </Label>
+            <div className="flex h-12 rounded-lg border border-border bg-card p-1">
+              {(
+                [
+                  { id: "cash" as const, label: "Cash" },
+                  { id: "card" as const, label: "Card" },
+                ]
+              ).map((opt) => (
+                <button
+                  key={opt.id}
+                  type="button"
+                  onClick={() => setPaymentMethod(opt.id)}
+                  className={cn(
+                    "flex-1 rounded-md text-sm font-bold transition-colors",
+                    paymentMethod === opt.id
+                      ? "bg-primary text-primary-foreground"
+                      : "text-muted-foreground hover:text-foreground",
+                  )}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+
         {/* Description */}
         <div className="space-y-1.5">
           <Label htmlFor="desc">Description</Label>
@@ -572,6 +629,12 @@ function AddExpenseForm({
                 }
               />
             </div>
+            {itemized && (
+              <p className="text-xs text-muted-foreground">
+                Calculated from your itemized list below — turn off
+                &quot;Itemize this bill&quot; to enter a total directly.
+              </p>
+            )}
           </div>
           <div className="space-y-1.5">
             <Label>Currency</Label>
@@ -690,31 +753,13 @@ function AddExpenseForm({
           <Switch checked={itemized} onCheckedChange={setItemized} />
         </div>
 
-        {/* Paid by + split method */}
+        {/* Split method */}
         <div className="rounded-xl border border-border bg-muted/20 p-4">
           <div className="flex flex-wrap items-center gap-2 text-sm">
-            <span className="font-medium text-muted-foreground">Paid by</span>
-            <Select value={payerId} onValueChange={setPayerId}>
-              <SelectTrigger className="h-8 w-auto gap-1 border-0 bg-card px-2 font-bold shadow-sm">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {participantIds.map((id) => {
-                  const u = getUser(id);
-                  if (!u) return null;
-                  return (
-                    <SelectItem key={id} value={id}>
-                      {id === currentUser.id ? "You" : u.name}
-                    </SelectItem>
-                  );
-                })}
-              </SelectContent>
-            </Select>
-            {!itemized && (
-              <span className="font-medium text-muted-foreground">
-                and split
-              </span>
-            )}
+            <span className="font-medium text-muted-foreground">
+              {payerId === currentUser.id ? "You" : getUser(payerId)?.name}{" "}
+              paid{!itemized && " — split"}
+            </span>
           </div>
 
           {!itemized && (

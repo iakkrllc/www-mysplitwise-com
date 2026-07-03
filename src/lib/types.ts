@@ -60,6 +60,7 @@ export interface Expense {
   items?: LineItem[];
   tax?: number;
   tip?: number;
+  paymentMethod?: "cash" | "card";
 }
 
 export type SplitMethod = "equal" | "exact" | "percentage" | "shares";
