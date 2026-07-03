@@ -19,6 +19,7 @@ import { useUI } from "@/lib/ui-store";
 import { balanceBetween, formatMoney, summaryForUser } from "@/lib/calculations";
 import type { GroupType } from "@/lib/types";
 import { UserAvatar } from "./user-avatar";
+import { InviteFriend } from "./invite-friend";
 import { cn } from "@/lib/utils";
 
 const GROUP_ICONS: Record<GroupType, typeof Home> = {
@@ -206,6 +207,14 @@ export function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
             </button>
           );
         })}
+      </div>
+
+      {/* Invite */}
+      <div className="mx-1 mb-4 mt-1 rounded-xl border border-dashed border-primary/40 bg-secondary/40 p-3">
+        <p className="mb-2 text-[13px] font-bold text-sw-charcoal">
+          Invite a friend
+        </p>
+        <InviteFriend />
       </div>
     </div>
   );
