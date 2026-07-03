@@ -27,6 +27,15 @@ interface AuthContextValue {
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
+function logEvent(accessToken: string | undefined, eventType: "login" | "signup" | "logout") {
+  if (!accessToken) return;
+  fetch("/api/log-activity", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${accessToken}` },
+    body: JSON.stringify({ eventType }),
+  }).catch(() => {});
+}
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
@@ -47,19 +56,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const signUp: AuthContextValue["signUp"] = async (email, password, name) => {
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: { data: { name } },
     });
+    if (!error) logEvent(data.session?.access_token, "signup");
     return { error: error?.message ?? null };
   };
 
   const signIn: AuthContextValue["signIn"] = async (email, password) => {
-    const { error } = await supabase.auth.signInWithPassword({
+    const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
+    if (!error) logEvent(data.session?.access_token, "login");
     return { error: error?.message ?? null };
   };
 
@@ -78,24 +89,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     phone,
     token,
   ) => {
-    const { error } = await supabase.auth.verifyOtp({
+    const { data, error } = await supabase.auth.verifyOtp({
       phone,
       token,
       type: "sms",
     });
+    if (!error) {
+      const isNewAccount = data.user && Date.now() - new Date(data.user.created_at).getTime() < 60_000;
+      logEvent(data.session?.access_token, isNewAccount ? "signup" : "login");
+    }
     return { error: error?.message ?? null };
   };
 
   const signOut = async () => {
     const { data } = await supabase.auth.getSession();
-    const token = data.session?.access_token;
-    if (token) {
-      fetch("/api/log-activity", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ eventType: "logout" }),
-      }).catch(() => {});
-    }
+    logEvent(data.session?.access_token, "logout");
     await supabase.auth.signOut();
   };
 

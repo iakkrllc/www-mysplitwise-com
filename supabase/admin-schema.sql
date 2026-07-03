@@ -33,39 +33,12 @@ create table activity_log (
 alter table activity_log enable row level security;
 create index activity_log_created_at_idx on activity_log (created_at desc);
 
--- Auto-log every signup
-create or replace function log_user_signup()
-returns trigger as $$
-begin
-  insert into activity_log (user_id, event_type, description)
-  values (new.id, 'signup', 'Account created');
-  return new;
-end;
-$$ language plpgsql security definer;
-
-drop trigger if exists on_auth_user_created on auth.users;
-create trigger on_auth_user_created
-  after insert on auth.users
-  for each row execute function log_user_signup();
-
--- Auto-log every new login session
-create or replace function log_user_login()
-returns trigger as $$
-begin
-  insert into activity_log (user_id, event_type, description)
-  values (new.user_id, 'login', 'Signed in');
-  return new;
-end;
-$$ language plpgsql security definer;
-
-drop trigger if exists on_auth_session_created on auth.sessions;
-create trigger on_auth_session_created
-  after insert on auth.sessions
-  for each row execute function log_user_login();
-
--- Note: explicit "logout" events are logged by the app itself when a user clicks
--- Sign Out (not via a DB trigger) — Supabase doesn't cleanly distinguish an
--- explicit sign-out from routine expired-session cleanup at the database level.
+-- Note: login/signup/logout events are logged by the app itself (via
+-- /api/log-activity) right after a successful auth call — NOT via database
+-- triggers on auth.users/auth.sessions. Triggers on Supabase's internal auth
+-- tables run inside the same transaction as the login/signup itself, so if
+-- the trigger fails for any reason, it fails the login/signup too. Logging
+-- from the application after auth succeeds avoids that risk entirely.
 
 -- Make yourself the owner (replace the email with whatever address you used
 -- to sign up on mysplitwise — check Supabase Dashboard > Authentication > Users

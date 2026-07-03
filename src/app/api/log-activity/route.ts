@@ -1,7 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSupabaseAdmin } from "@/lib/supabase-admin";
 
-const ALLOWED_EVENTS = new Set(["logout"]);
+const EVENT_DESCRIPTIONS: Record<string, string> = {
+  login: "Signed in",
+  logout: "Signed out",
+  signup: "Account created",
+};
+const ALLOWED_EVENTS = new Set(Object.keys(EVENT_DESCRIPTIONS));
 
 export async function POST(req: NextRequest) {
   const authHeader = req.headers.get("authorization");
@@ -21,7 +26,7 @@ export async function POST(req: NextRequest) {
   await supabase.from("activity_log").insert({
     user_id: data.user.id,
     event_type: eventType,
-    description: "Signed out",
+    description: EVENT_DESCRIPTIONS[eventType],
   });
 
   return NextResponse.json({ ok: true });
