@@ -13,6 +13,14 @@ import { cn } from "@/lib/utils";
 
 type AuthTab = "email" | "phone";
 
+/** Where to send the user after a successful login/signup — honors ?next=, defaults to /app. */
+function getNextPath(): string {
+  if (typeof window === "undefined") return "/app";
+  const next = new URLSearchParams(window.location.search).get("next");
+  if (next && next.startsWith("/") && !next.startsWith("//")) return next;
+  return "/app";
+}
+
 export function AuthForm({ mode }: { mode: "login" | "signup" }) {
   const [tab, setTab] = useState<AuthTab>("email");
 
@@ -121,7 +129,7 @@ function EmailAuthForm({ mode }: { mode: "login" | "signup" }) {
       setError(error);
       return;
     }
-    router.push("/app");
+    router.push(getNextPath());
   };
 
   return (
@@ -220,7 +228,7 @@ function PhoneAuthForm({ mode }: { mode: "login" | "signup" }) {
       setError(error);
       return;
     }
-    router.push("/app");
+    router.push(getNextPath());
   };
 
   if (step === "code") {
