@@ -1,0 +1,65 @@
+workflows:
+  android-release:
+    name: mysplitwise Android Release
+    max_build_duration: 60
+    instance_type: linux_x2
+    environment:
+      groups:
+        - google_play # add in Codemagic: GCLOUD_SERVICE_ACCOUNT_CREDENTIALS
+      vars:
+        PACKAGE_NAME: "com.mysplitwise.app"
+      node: 20
+    scripts:
+      - name: Install dependencies
+        script: npm ci
+      - name: Sync Capacitor
+        script: npx cap sync android
+      - name: Build Android App Bundle
+        script: |
+          cd android
+          ./gradlew bundleRelease
+    artifacts:
+      - android/app/build/outputs/**/*.aab
+      - android/app/build/outputs/**/*.apk
+    publishing:
+      google_play:
+        credentials: $GCLOUD_SERVICE_ACCOUNT_CREDENTIALS
+        track: internal # start on the internal track, promote manually once verified
+
+  ios-release:
+    name: mysplitwise iOS Release
+    max_build_duration: 60
+    instance_type: mac_mini_m2
+    environment:
+      groups:
+        - app_store_credentials # add in Codemagic: App Store Connect API key
+      vars:
+        BUNDLE_ID: "com.mysplitwise.app"
+        XCODE_WORKSPACE: "ios/App/App.xcworkspace"
+        XCODE_SCHEME: "App"
+      node: 20
+      xcode: latest
+      cocoapods: default
+    scripts:
+      - name: Install dependencies
+        script: npm ci
+      - name: Sync Capacitor
+        script: npx cap sync ios
+      - name: Install CocoaPods
+        script: |
+          cd ios/App
+          pod install
+      - name: Set up code signing
+        script: |
+          xcode-project use-profiles
+      - name: Build ipa
+        script: |
+          xcode-project build-ipa \
+            --workspace "$XCODE_WORKSPACE" \
+            --scheme "$XCODE_SCHEME"
+    artifacts:
+      - build/ios/ipa/*.ipa
+    publishing:
+      app_store_connect:
+        auth: integration # configure the App Store Connect integration in Codemagic's UI
+        submit_to_testflight: true

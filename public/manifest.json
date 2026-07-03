@@ -8,7 +8,11 @@
   "orientation": "portrait",
   "background_color": "#ffffff",
   "theme_color": "#7C3AED",
-  "categories": ["finance", "productivity", "utilities"],
+  "categories": [
+    "finance",
+    "productivity",
+    "utilities"
+  ],
   "icons": [
     {
       "src": "/icon.svg",
