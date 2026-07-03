@@ -31,6 +31,7 @@ import {
   Loader2,
   X,
   Send,
+  Trash2,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -328,6 +329,20 @@ export function AccountView() {
             <RotateCcw className="h-4 w-4" /> Clear all data
           </Button>
         </div>
+      </div>
+
+      <div className="mt-6 rounded-2xl border border-destructive/30 bg-destructive/5 p-5">
+        <h2 className="font-bold text-destructive">Danger zone</h2>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Permanently delete your mysplitwise login. This can&apos;t be undone.
+        </p>
+        <Button
+          variant="destructive"
+          className="mt-4 gap-2"
+          onClick={() => openModal({ kind: "deleteAccount" })}
+        >
+          <Trash2 className="h-4 w-4" /> Delete account
+        </Button>
       </div>
     </div>
   );

@@ -14,7 +14,8 @@ export type Modal =
   | { kind: "createGroup"; editId?: string }
   | { kind: "addFriend" }
   | { kind: "expenseDetail"; id: string }
-  | { kind: "paymentInfo"; userId: string };
+  | { kind: "paymentInfo"; userId: string }
+  | { kind: "deleteAccount" };
 
 interface UIContextValue {
   modal: Modal;

@@ -19,6 +19,7 @@ import { CreateGroupDialog } from "./dialogs/create-group-dialog";
 import { AddFriendDialog } from "./dialogs/add-friend-dialog";
 import { ExpenseDetailDialog } from "./dialogs/expense-detail-dialog";
 import { PaymentInfoDialog } from "./dialogs/payment-info-dialog";
+import { DeleteAccountDialog } from "./dialogs/delete-account-dialog";
 import { Toaster } from "./ui/sonner";
 import { MysplitwiseMark } from "./mysplitwise-logo";
 
@@ -81,6 +82,7 @@ export function AppShell() {
       <AddFriendDialog />
       <ExpenseDetailDialog />
       <PaymentInfoDialog />
+      <DeleteAccountDialog />
       <Toaster position="bottom-right" richColors />
     </div>
   );
