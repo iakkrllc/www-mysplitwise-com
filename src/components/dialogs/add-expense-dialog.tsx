@@ -96,6 +96,7 @@ function AddExpenseForm({
     addRecurring,
     getUser,
   } = useStore();
+  const { openModal } = useUI();
 
   const editing = modal.editId
     ? state.expenses.find((e) => e.id === modal.editId)
@@ -363,7 +364,11 @@ function AddExpenseForm({
 
   const save = () => {
     if (!canSave) {
-      toast.error("Please complete the expense details");
+      if (participantIds.length < 2) {
+        toast.error("Add a friend or group to split this expense with");
+      } else {
+        toast.error("Please complete the expense details");
+      }
       return;
     }
     const involved = itemized
@@ -513,6 +518,25 @@ function AddExpenseForm({
               </Popover>
             )}
           </div>
+          {nonParticipants.length === 0 && participantIds.length < 2 && (
+            <div className="flex items-center justify-between gap-3 rounded-lg border border-dashed border-primary/40 bg-secondary/60 px-3 py-2 text-xs text-sw-charcoal">
+              <span>
+                You need a friend to split this expense with — add one first.
+              </span>
+              <Button
+                type="button"
+                size="sm"
+                variant="green"
+                className="shrink-0"
+                onClick={() => {
+                  onDone();
+                  openModal({ kind: "addFriend" });
+                }}
+              >
+                Add a friend
+              </Button>
+            </div>
+          )}
         </div>
 
         {/* Description */}
