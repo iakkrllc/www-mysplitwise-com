@@ -3,6 +3,7 @@ export interface User {
   name: string;
   email: string;
   avatarColor: string;
+  avatarUrl?: string;
   venmo?: string;
   paypal?: string;
   cashapp?: string;

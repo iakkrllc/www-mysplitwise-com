@@ -13,11 +13,26 @@ export function UserAvatar({
   className,
   ring = false,
 }: {
-  user: Pick<User, "name" | "avatarColor">;
+  user: Pick<User, "name" | "avatarColor"> & Partial<Pick<User, "avatarUrl">>;
   size?: number;
   className?: string;
   ring?: boolean;
 }) {
+  if (user.avatarUrl) {
+    return (
+      <img
+        src={user.avatarUrl}
+        alt={user.name}
+        title={user.name}
+        className={cn(
+          "inline-block shrink-0 rounded-full object-cover select-none",
+          ring && "ring-2 ring-white",
+          className,
+        )}
+        style={{ width: size, height: size }}
+      />
+    );
+  }
   return (
     <div
       className={cn(

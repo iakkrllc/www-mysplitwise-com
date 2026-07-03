@@ -13,6 +13,7 @@ import { Label } from "../ui/label";
 import { Button } from "../ui/button";
 import { useStore } from "@/lib/store";
 import { useUI } from "@/lib/ui-store";
+import { InviteFriend } from "../invite-friend";
 import { toast } from "sonner";
 
 export function AddFriendDialog() {
@@ -68,6 +69,12 @@ export function AddFriendDialog() {
               onKeyDown={(e) => e.key === "Enter" && save()}
             />
           </div>
+        </div>
+        <div className="border-t border-border pt-3">
+          <p className="mb-2 text-xs font-semibold text-muted-foreground">
+            Not on mysplitwise yet? Invite them instead:
+          </p>
+          <InviteFriend />
         </div>
         <DialogFooter>
           <Button variant="ghost" onClick={close}>

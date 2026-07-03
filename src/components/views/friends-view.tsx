@@ -6,6 +6,7 @@ import { useUI } from "@/lib/ui-store";
 import { balanceBetween, formatMoney, summaryForUser } from "@/lib/calculations";
 import { UserAvatar } from "../user-avatar";
 import { Button } from "../ui/button";
+import { InviteFriend } from "../invite-friend";
 import { cn } from "@/lib/utils";
 import { ArrowRight, UserPlus, Users } from "lucide-react";
 import { toast } from "sonner";
@@ -63,6 +64,18 @@ export function FriendsView() {
         <Button variant="green" onClick={() => openModal({ kind: "addFriend" })}>
           <UserPlus className="h-4 w-4" /> Add
         </Button>
+      </div>
+
+      <div className="mb-6 flex flex-col gap-2 rounded-2xl border border-dashed border-primary/40 bg-secondary/40 p-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <p className="text-sm font-bold text-sw-charcoal">
+            Invite a friend to mysplitwise
+          </p>
+          <p className="text-xs text-muted-foreground">
+            Share your invite link — they don&apos;t need an account to see it.
+          </p>
+        </div>
+        <InviteFriend />
       </div>
 
       {friends.length === 0 ? (

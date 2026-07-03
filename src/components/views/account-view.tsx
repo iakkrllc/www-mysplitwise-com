@@ -4,7 +4,9 @@ import { useRef, useState } from "react";
 import { useStore } from "@/lib/store";
 import { useUI } from "@/lib/ui-store";
 import { downloadFile } from "@/lib/export";
+import { uploadAvatar } from "@/lib/avatar-upload";
 import { UserAvatar } from "../user-avatar";
+import { InviteFriend } from "../invite-friend";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
@@ -17,7 +19,18 @@ import {
 } from "../ui/select";
 import { CURRENCIES } from "@/lib/currency";
 import { cn } from "@/lib/utils";
-import { Check, RotateCcw, Globe, Download, Upload, Wallet } from "lucide-react";
+import {
+  Check,
+  RotateCcw,
+  Globe,
+  Download,
+  Upload,
+  Wallet,
+  Camera,
+  Loader2,
+  X,
+  Send,
+} from "lucide-react";
 import { toast } from "sonner";
 
 const COLORS = [
@@ -25,6 +38,8 @@ const COLORS = [
   "#5BA0C5", "#7FB069", "#E4A85B", "#B05BC5", "#5BC5C0",
   "#E45B6E", "#9C7B5A",
 ];
+
+const TELEGRAM_BOT_USERNAME = process.env.NEXT_PUBLIC_TELEGRAM_BOT_USERNAME;
 
 export function AccountView() {
   const {
@@ -59,6 +74,28 @@ export function AccountView() {
   const [name, setName] = useState(currentUser.name);
   const [email, setEmail] = useState(currentUser.email);
   const [color, setColor] = useState(currentUser.avatarColor);
+  const [avatarUploading, setAvatarUploading] = useState(false);
+  const photoRef = useRef<HTMLInputElement>(null);
+
+  const onPhoto = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setAvatarUploading(true);
+    try {
+      const url = await uploadAvatar(currentUser.id, file);
+      updateProfile({ avatarUrl: url });
+      toast.success("Photo updated");
+    } catch {
+      toast.error("Couldn't upload that photo — try again");
+    }
+    setAvatarUploading(false);
+    if (photoRef.current) photoRef.current.value = "";
+  };
+
+  const removePhoto = () => {
+    updateProfile({ avatarUrl: undefined });
+    toast.success("Photo removed");
+  };
 
   const dirty =
     name !== currentUser.name ||
@@ -82,10 +119,44 @@ export function AccountView() {
 
       <div className="rounded-2xl border border-border bg-card p-6">
         <div className="flex items-center gap-4">
-          <UserAvatar user={{ name, avatarColor: color }} size={72} />
-          <div>
+          <div className="relative">
+            <UserAvatar
+              user={{ name, avatarColor: color, avatarUrl: currentUser.avatarUrl }}
+              size={72}
+            />
+            <input
+              ref={photoRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={onPhoto}
+            />
+            <button
+              type="button"
+              onClick={() => photoRef.current?.click()}
+              disabled={avatarUploading}
+              className="absolute -bottom-1 -right-1 flex h-7 w-7 items-center justify-center rounded-full border-2 border-card bg-primary text-primary-foreground shadow-sm transition-transform hover:scale-105"
+              aria-label="Change photo"
+            >
+              {avatarUploading ? (
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+              ) : (
+                <Camera className="h-3.5 w-3.5" />
+              )}
+            </button>
+          </div>
+          <div className="flex-1">
             <p className="text-lg font-bold text-sw-charcoal">{name || "Your name"}</p>
             <p className="text-sm text-muted-foreground">{email || "your@email.com"}</p>
+            {currentUser.avatarUrl && (
+              <button
+                type="button"
+                onClick={removePhoto}
+                className="mt-1 flex items-center gap-1 text-xs font-semibold text-muted-foreground hover:text-destructive"
+              >
+                <X className="h-3 w-3" /> Remove photo
+              </button>
+            )}
           </div>
         </div>
 
@@ -174,6 +245,37 @@ export function AccountView() {
             </SelectContent>
           </Select>
         </div>
+      </div>
+
+      {/* Invite + updates */}
+      <div className="mt-6 rounded-2xl border border-border bg-card p-6">
+        <h2 className="font-bold text-sw-charcoal">Invite friends</h2>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Share mysplitwise with friends on WhatsApp or Telegram.
+        </p>
+        <InviteFriend className="mt-3" />
+
+        {TELEGRAM_BOT_USERNAME && (
+          <>
+            <div className="my-4 h-px bg-border" />
+            <h2 className="flex items-center gap-2 font-bold text-sw-charcoal">
+              <Send className="h-4 w-4 text-primary" /> Get app updates
+            </h2>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Follow our Telegram bot for new feature announcements and
+              updates.
+            </p>
+            <Button variant="outline" className="mt-3 gap-2" asChild>
+              <a
+                href={`https://t.me/${TELEGRAM_BOT_USERNAME}`}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <Send className="h-4 w-4" /> Open @{TELEGRAM_BOT_USERNAME}
+              </a>
+            </Button>
+          </>
+        )}
       </div>
 
       {/* Stats */}
