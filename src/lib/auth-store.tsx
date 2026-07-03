@@ -14,6 +14,14 @@ interface AuthContextValue {
     name: string,
   ) => Promise<{ error: string | null }>;
   signIn: (email: string, password: string) => Promise<{ error: string | null }>;
+  sendPhoneOtp: (
+    phone: string,
+    name?: string,
+  ) => Promise<{ error: string | null }>;
+  verifyPhoneOtp: (
+    phone: string,
+    token: string,
+  ) => Promise<{ error: string | null }>;
   signOut: () => Promise<void>;
 }
 
@@ -55,6 +63,29 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return { error: error?.message ?? null };
   };
 
+  const sendPhoneOtp: AuthContextValue["sendPhoneOtp"] = async (
+    phone,
+    name,
+  ) => {
+    const { error } = await supabase.auth.signInWithOtp({
+      phone,
+      options: name ? { data: { name } } : undefined,
+    });
+    return { error: error?.message ?? null };
+  };
+
+  const verifyPhoneOtp: AuthContextValue["verifyPhoneOtp"] = async (
+    phone,
+    token,
+  ) => {
+    const { error } = await supabase.auth.verifyOtp({
+      phone,
+      token,
+      type: "sms",
+    });
+    return { error: error?.message ?? null };
+  };
+
   const signOut = async () => {
     await supabase.auth.signOut();
   };
@@ -67,6 +98,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         loading,
         signUp,
         signIn,
+        sendPhoneOtp,
+        verifyPhoneOtp,
         signOut,
       }}
     >

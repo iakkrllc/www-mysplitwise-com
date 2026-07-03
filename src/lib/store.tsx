@@ -177,8 +177,9 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   const authName =
     (authUser?.user_metadata?.name as string | undefined) ||
     authUser?.email ||
+    authUser?.phone ||
     "You";
-  const authEmail = authUser?.email ?? "";
+  const authEmail = authUser?.email ?? authUser?.phone ?? "";
   const storageKey = `${STORAGE_KEY}.${authUserId}`;
 
   const blankState = useCallback(
