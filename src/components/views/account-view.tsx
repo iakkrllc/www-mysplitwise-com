@@ -2,6 +2,7 @@
 
 import { useRef, useState } from "react";
 import { useStore } from "@/lib/store";
+import { useUI } from "@/lib/ui-store";
 import { downloadFile } from "@/lib/export";
 import { UserAvatar } from "../user-avatar";
 import { Button } from "../ui/button";
@@ -16,7 +17,7 @@ import {
 } from "../ui/select";
 import { CURRENCIES } from "@/lib/currency";
 import { cn } from "@/lib/utils";
-import { Check, RotateCcw, Globe, Download, Upload } from "lucide-react";
+import { Check, RotateCcw, Globe, Download, Upload, Wallet } from "lucide-react";
 import { toast } from "sonner";
 
 const COLORS = [
@@ -35,6 +36,7 @@ export function AccountView() {
     exportState,
     importState,
   } = useStore();
+  const { openModal } = useUI();
   const fileRef = useRef<HTMLInputElement>(null);
 
   const backup = () => {
@@ -130,7 +132,14 @@ export function AccountView() {
           </div>
         </div>
 
-        <div className="mt-6 flex justify-end">
+        <div className="mt-6 flex justify-between">
+          <Button
+            variant="ghost"
+            className="text-muted-foreground"
+            onClick={() => openModal({ kind: "paymentInfo", userId: currentUser.id })}
+          >
+            <Wallet className="mr-2 h-4 w-4" /> mysplitwise Pay settings
+          </Button>
           <Button variant="green" disabled={!dirty} onClick={save}>
             Save changes
           </Button>

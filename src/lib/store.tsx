@@ -142,6 +142,7 @@ interface StoreContextValue {
   updateGroup: (id: string, patch: Partial<Group>) => void;
   deleteGroup: (id: string) => void;
   updateProfile: (patch: Partial<User>) => void;
+  updateUser: (id: string, patch: Partial<User>) => void;
   setBaseCurrency: (code: string) => void;
   setNotificationsRead: () => void;
   addComment: (expenseId: string, text: string) => void;
@@ -333,6 +334,16 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
         users: s.users.map((u) =>
           u.id === s.currentUserId ? { ...u, ...patch } : u,
         ),
+      }));
+    },
+    [],
+  );
+
+  const updateUser: StoreContextValue["updateUser"] = useCallback(
+    (id, patch) => {
+      setState((s) => ({
+        ...s,
+        users: s.users.map((u) => (u.id === id ? { ...u, ...patch } : u)),
       }));
     },
     [],
@@ -550,6 +561,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     updateGroup,
     deleteGroup,
     updateProfile,
+    updateUser,
     setBaseCurrency,
     setNotificationsRead,
     addComment,

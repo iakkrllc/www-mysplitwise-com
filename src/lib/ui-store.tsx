@@ -13,7 +13,8 @@ export type Modal =
   | { kind: "settle"; groupId?: string | null; fromId?: string; toId?: string }
   | { kind: "createGroup"; editId?: string }
   | { kind: "addFriend" }
-  | { kind: "expenseDetail"; id: string };
+  | { kind: "expenseDetail"; id: string }
+  | { kind: "paymentInfo"; userId: string };
 
 interface UIContextValue {
   modal: Modal;

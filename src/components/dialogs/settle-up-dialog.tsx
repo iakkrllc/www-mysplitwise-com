@@ -24,6 +24,7 @@ import { balanceBetween, formatMoney, round2 } from "@/lib/calculations";
 import { getCurrency } from "@/lib/currency";
 import type { Expense } from "@/lib/types";
 import { UserAvatar } from "../user-avatar";
+import { PayMenu } from "../pay-menu";
 import { ArrowRight } from "lucide-react";
 import { toast } from "sonner";
 
@@ -240,13 +241,24 @@ function SettleForm({
         </div>
       </div>
 
-      <DialogFooter>
-        <Button variant="ghost" onClick={onDone}>
-          Cancel
-        </Button>
-        <Button variant="green" onClick={save} disabled={!canSave}>
-          Record payment
-        </Button>
+      <DialogFooter className="sm:justify-between">
+        {fromId === currentUser.id && to && amountNum > 0 ? (
+          <PayMenu
+            payee={to}
+            amount={amountNum}
+            note={`Settling up via mysplitwise`}
+          />
+        ) : (
+          <span />
+        )}
+        <div className="flex gap-2">
+          <Button variant="ghost" onClick={onDone}>
+            Cancel
+          </Button>
+          <Button variant="green" onClick={save} disabled={!canSave}>
+            Record payment
+          </Button>
+        </div>
       </DialogFooter>
     </>
   );

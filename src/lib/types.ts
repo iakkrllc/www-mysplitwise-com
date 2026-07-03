@@ -3,6 +3,9 @@ export interface User {
   name: string;
   email: string;
   avatarColor: string;
+  venmo?: string;
+  paypal?: string;
+  cashapp?: string;
 }
 
 export type GroupType = "trip" | "home" | "couple" | "other";

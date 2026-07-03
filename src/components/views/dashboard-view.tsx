@@ -10,9 +10,11 @@ import {
 } from "@/lib/calculations";
 import { UserAvatar } from "../user-avatar";
 import { Button } from "../ui/button";
+import { PayMenu } from "../pay-menu";
 import { cn } from "@/lib/utils";
 import { ArrowRight, PartyPopper } from "lucide-react";
 import { DashboardCharts } from "../charts/dashboard-charts";
+import type { User } from "@/lib/types";
 
 export function DashboardView() {
   const { state, currentUser, setView, baseExpenses } = useStore();
@@ -77,6 +79,7 @@ export function DashboardView() {
                     currency={base}
                     kind="owe"
                     onClick={() => setView({ type: "friend", id: u.id })}
+                    payee={u}
                   />
                 );
               })
@@ -203,6 +206,7 @@ function PersonRow({
   currency,
   kind,
   onClick,
+  payee,
 }: {
   name: string;
   color: string;
@@ -210,35 +214,50 @@ function PersonRow({
   currency: string;
   kind: "owe" | "owed";
   onClick: () => void;
+  payee?: User;
 }) {
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      className="group flex w-full items-center gap-3 rounded-xl border border-border bg-card px-4 py-3 text-left transition-all hover:border-primary/40 hover:shadow-sm"
-    >
-      <UserAvatar user={{ name, avatarColor: color }} size={40} />
-      <div className="min-w-0 flex-1">
-        <p className="truncate font-semibold text-sw-charcoal">{name}</p>
-        <p
+    <div className="group flex w-full items-center gap-3 rounded-xl border border-border bg-card px-4 py-3 transition-all hover:border-primary/40 hover:shadow-sm">
+      <button
+        type="button"
+        onClick={onClick}
+        className="flex min-w-0 flex-1 items-center gap-3 text-left"
+      >
+        <UserAvatar user={{ name, avatarColor: color }} size={40} />
+        <div className="min-w-0 flex-1">
+          <p className="truncate font-semibold text-sw-charcoal">{name}</p>
+          <p
+            className={cn(
+              "text-xs font-medium",
+              kind === "owe" ? "text-owe" : "text-owed",
+            )}
+          >
+            {kind === "owe" ? "you owe" : "owes you"}
+          </p>
+        </div>
+        <span
           className={cn(
-            "text-xs font-medium",
+            "text-lg font-extrabold",
             kind === "owe" ? "text-owe" : "text-owed",
           )}
         >
-          {kind === "owe" ? "you owe" : "owes you"}
-        </p>
-      </div>
-      <span
-        className={cn(
-          "text-lg font-extrabold",
-          kind === "owe" ? "text-owe" : "text-owed",
-        )}
-      >
-        {formatMoney(amount, currency)}
-      </span>
-      <ArrowRight className="h-4 w-4 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100" />
-    </button>
+          {formatMoney(amount, currency)}
+        </span>
+      </button>
+      {kind === "owe" && payee ? (
+        <PayMenu
+          payee={payee}
+          amount={amount}
+          note={`Settling up via mysplitwise`}
+          size="sm"
+        />
+      ) : (
+        <ArrowRight
+          onClick={onClick}
+          className="h-4 w-4 shrink-0 cursor-pointer text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100"
+        />
+      )}
+    </div>
   );
 }
 

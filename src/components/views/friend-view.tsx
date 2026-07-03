@@ -8,6 +8,7 @@ import { UserAvatar } from "../user-avatar";
 import { Button } from "../ui/button";
 import { ExpenseList } from "../expense-list";
 import { FriendInsights } from "../charts/friend-insights";
+import { PayMenu } from "../pay-menu";
 import { Plus, Scale } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -59,6 +60,13 @@ export function FriendView({ friendId }: { friendId: string }) {
         </div>
         <div className="flex gap-2">
           <Button
+            variant="ghost"
+            onClick={() => openModal({ kind: "paymentInfo", userId: friendId })}
+            className="gap-1.5 text-muted-foreground"
+          >
+            Payment info
+          </Button>
+          <Button
             variant="orange"
             onClick={() =>
               openModal({
@@ -86,7 +94,7 @@ export function FriendView({ friendId }: { friendId: string }) {
       {/* Balance banner */}
       <div
         className={cn(
-          "mt-5 rounded-xl border px-5 py-4 text-[15px] font-semibold",
+          "mt-5 flex items-center justify-between gap-3 rounded-xl border px-5 py-4 text-[15px] font-semibold",
           settled
             ? "border-border bg-muted/40 text-sw-charcoal"
             : owed
@@ -94,18 +102,27 @@ export function FriendView({ friendId }: { friendId: string }) {
               : "border-[hsl(var(--sw-orange))]/25 bg-[hsl(var(--sw-orange))]/8 text-owe",
         )}
       >
-        {settled ? (
-          <>You are all settled up with {friend.name.split(" ")[0]}.</>
-        ) : owed ? (
-          <>
-            {friend.name.split(" ")[0]} owes you{" "}
-            <span className="font-extrabold">{formatMoney(balance, base)}</span>
-          </>
-        ) : (
-          <>
-            You owe {friend.name.split(" ")[0]}{" "}
-            <span className="font-extrabold">{formatMoney(-balance, base)}</span>
-          </>
+        <span>
+          {settled ? (
+            <>You are all settled up with {friend.name.split(" ")[0]}.</>
+          ) : owed ? (
+            <>
+              {friend.name.split(" ")[0]} owes you{" "}
+              <span className="font-extrabold">{formatMoney(balance, base)}</span>
+            </>
+          ) : (
+            <>
+              You owe {friend.name.split(" ")[0]}{" "}
+              <span className="font-extrabold">{formatMoney(-balance, base)}</span>
+            </>
+          )}
+        </span>
+        {!settled && !owed && (
+          <PayMenu
+            payee={friend}
+            amount={-balance}
+            note={`Settling up via mysplitwise`}
+          />
         )}
       </div>
 
