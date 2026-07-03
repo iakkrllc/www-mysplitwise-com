@@ -13,6 +13,7 @@ import {
   Repeat,
   Users,
   Wallet,
+  Sparkles,
 } from "lucide-react";
 import { useStore, type View } from "@/lib/store";
 import { useUI } from "@/lib/ui-store";
@@ -112,6 +113,18 @@ export function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
       {navItem("Friends", <Users className="h-[18px] w-[18px]" />, {
         type: "friends",
       })}
+
+      <button
+        type="button"
+        onClick={() => {
+          openModal({ kind: "askAi" });
+          onNavigate?.();
+        }}
+        className="flex w-full items-center gap-2.5 rounded-md px-3 py-2 text-[15px] font-semibold text-primary transition-colors hover:bg-muted"
+      >
+        <Sparkles className="h-[18px] w-[18px]" />
+        <span>Ask mysplitwise</span>
+      </button>
 
       {/* Groups */}
       <div className="mt-5 flex items-center justify-between px-3 pb-1">

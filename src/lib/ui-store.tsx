@@ -2,6 +2,18 @@
 
 import { createContext, useCallback, useContext, useState } from "react";
 
+export interface AiExpensePrefill {
+  description?: string;
+  amount?: number;
+  category?: string;
+  date?: string;
+  participantIds?: string[];
+  groupId?: string | null;
+  items?: { name: string; amount: number }[];
+  tax?: number;
+  tip?: number;
+}
+
 export type Modal =
   | { kind: "none" }
   | {
@@ -9,13 +21,16 @@ export type Modal =
       groupId?: string | null;
       friendId?: string;
       editId?: string;
+      aiPrefill?: AiExpensePrefill;
     }
   | { kind: "settle"; groupId?: string | null; fromId?: string; toId?: string }
   | { kind: "createGroup"; editId?: string }
   | { kind: "addFriend" }
   | { kind: "expenseDetail"; id: string }
   | { kind: "paymentInfo"; userId: string }
-  | { kind: "deleteAccount" };
+  | { kind: "deleteAccount" }
+  | { kind: "askAi" }
+  | { kind: "reminderDraft"; friendId: string };
 
 interface UIContextValue {
   modal: Modal;

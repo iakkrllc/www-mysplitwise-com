@@ -20,6 +20,8 @@ import { AddFriendDialog } from "./dialogs/add-friend-dialog";
 import { ExpenseDetailDialog } from "./dialogs/expense-detail-dialog";
 import { PaymentInfoDialog } from "./dialogs/payment-info-dialog";
 import { DeleteAccountDialog } from "./dialogs/delete-account-dialog";
+import { AskAiDialog } from "./dialogs/ask-ai-dialog";
+import { ReminderDialog } from "./dialogs/reminder-dialog";
 import { Toaster } from "./ui/sonner";
 import { MysplitwiseMark } from "./mysplitwise-logo";
 
@@ -83,6 +85,8 @@ export function AppShell() {
       <ExpenseDetailDialog />
       <PaymentInfoDialog />
       <DeleteAccountDialog />
+      <AskAiDialog />
+      <ReminderDialog />
       <Toaster position="bottom-right" richColors />
     </div>
   );

@@ -6,6 +6,7 @@ import { useStore } from "@/lib/store";
 import { useUI } from "@/lib/ui-store";
 import { balanceBetween, formatMoney } from "@/lib/calculations";
 import { todayISO, parseLocalDate } from "@/lib/dates";
+import { predictedNudges } from "@/lib/predictive-nudges";
 import {
   Bell,
   CalendarClock,
@@ -14,6 +15,7 @@ import {
   HandCoins,
   Scale,
   Check,
+  Sparkles,
   type LucideIcon,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -130,6 +132,33 @@ export function NotificationsBell() {
       }
     }
 
+    // Predicted spending patterns that look overdue (e.g. groceries every ~7 days)
+    for (const n of predictedNudges(state.expenses)) {
+      standing.push({
+        id: `nudge-${n.key}`,
+        icon: Sparkles,
+        iconColor: "#7C3AED",
+        title: (
+          <>
+            You usually log <b>{n.description}</b> every ~{n.intervalDays} days
+          </>
+        ),
+        sub: `Last one was ${n.daysSinceLast} days ago · ~${formatMoney(n.avgAmount, n.currency)}`,
+        action: {
+          label: "Log it",
+          run: () =>
+            openModal({
+              kind: "addExpense",
+              aiPrefill: {
+                description: n.description,
+                category: n.category,
+                amount: n.avgAmount,
+              },
+            }),
+        },
+      });
+    }
+
     // Outstanding balances → remind / settle
     const friends = state.users.filter((u) => u.id !== currentUser.id);
     for (const f of friends) {
@@ -146,8 +175,7 @@ export function NotificationsBell() {
           ),
           action: {
             label: "Remind",
-            run: () =>
-              toast.success(`Reminder sent to ${f.name.split(" ")[0]}`),
+            run: () => openModal({ kind: "reminderDraft", friendId: f.id }),
           },
         });
       } else if (bal < -0.5) {

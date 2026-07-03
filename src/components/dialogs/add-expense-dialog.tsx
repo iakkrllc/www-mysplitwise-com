@@ -31,6 +31,7 @@ import { round2, formatMoney } from "@/lib/calculations";
 import { todayISO } from "@/lib/dates";
 import { splitEqual, splitByPercent, splitByShares } from "@/lib/split";
 import { compressImage } from "@/lib/image";
+import { callAiApi } from "@/lib/call-ai-api";
 import type {
   ExpenseShare,
   Frequency,
@@ -49,8 +50,19 @@ import {
   Plus,
   Trash2,
   ListPlus,
+  Sparkles,
 } from "lucide-react";
 import { toast } from "sonner";
+
+interface ScannedReceipt {
+  merchant: string;
+  date: string | null;
+  category: string;
+  tax: number;
+  tip: number;
+  total: number;
+  items: { name: string; amount: number }[];
+}
 
 const METHODS: { id: SplitMethod; label: string; title: string }[] = [
   { id: "equal", label: "=", title: "Split equally" },
@@ -99,16 +111,26 @@ function AddExpenseForm({
   const editing = modal.editId
     ? state.expenses.find((e) => e.id === modal.editId)
     : undefined;
+  const pre = !editing ? modal.aiPrefill : undefined;
 
-  const [description, setDescription] = useState(editing?.description ?? "");
-  const [amount, setAmount] = useState(editing ? String(editing.amount) : "");
+  const [description, setDescription] = useState(
+    editing?.description ?? pre?.description ?? "",
+  );
+  const [amount, setAmount] = useState(
+    editing ? String(editing.amount) : pre?.amount ? String(pre.amount) : "",
+  );
   const [currency, setCurrency] = useState(
     editing?.currency ?? state.baseCurrency,
   );
-  const [category, setCategory] = useState(editing?.category ?? "general");
-  const [date, setDate] = useState(editing?.date.slice(0, 10) ?? todayISO());
+  const [category, setCategory] = useState(
+    editing?.category ?? pre?.category ?? "general",
+  );
+  const [categorySuggested, setCategorySuggested] = useState(!!pre?.category);
+  const [date, setDate] = useState(
+    editing?.date.slice(0, 10) ?? pre?.date ?? todayISO(),
+  );
   const [groupId, setGroupId] = useState<string | null>(
-    editing?.groupId ?? modal.groupId ?? null,
+    editing?.groupId ?? pre?.groupId ?? modal.groupId ?? null,
   );
   const [repeat, setRepeat] = useState<Frequency | "none">("none");
   const [receiptUrl, setReceiptUrl] = useState<string | undefined>(
@@ -116,6 +138,7 @@ function AddExpenseForm({
   );
   const [notes, setNotes] = useState(editing?.notes ?? "");
   const [uploading, setUploading] = useState(false);
+  const [scanning, setScanning] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>(
     editing?.paymentMethod ?? "card",
   );
@@ -123,6 +146,7 @@ function AddExpenseForm({
 
   const initialParticipants = (): string[] => {
     if (editing) return editing.shares.map((s) => s.userId);
+    if (pre?.participantIds?.length) return pre.participantIds;
     if (modal.groupId) {
       const g = getGroup(modal.groupId);
       if (g) return g.memberIds;
@@ -160,21 +184,29 @@ function AddExpenseForm({
     return {};
   });
 
-  const [itemized, setItemized] = useState(!!editing?.items?.length);
-  const [items, setItems] = useState<LineItem[]>(
-    editing?.items && editing.items.length
-      ? editing.items
-      : [
-          {
-            id: uid("li_"),
-            name: "",
-            amount: 0,
-            participantIds: [...participantIds],
-          },
-        ],
+  const [itemized, setItemized] = useState(
+    !!editing?.items?.length || !!pre?.items?.length,
   );
-  const [tax, setTax] = useState(editing?.tax ? String(editing.tax) : "");
-  const [tip, setTip] = useState(editing?.tip ? String(editing.tip) : "");
+  const [items, setItems] = useState<LineItem[]>(() => {
+    if (editing?.items && editing.items.length) return editing.items;
+    if (pre?.items && pre.items.length) {
+      return pre.items.map((it) => ({
+        id: uid("li_"),
+        name: it.name,
+        amount: it.amount,
+        participantIds: [...participantIds],
+      }));
+    }
+    return [
+      { id: uid("li_"), name: "", amount: 0, participantIds: [...participantIds] },
+    ];
+  });
+  const [tax, setTax] = useState(
+    editing?.tax ? String(editing.tax) : pre?.tax ? String(pre.tax) : "",
+  );
+  const [tip, setTip] = useState(
+    editing?.tip ? String(editing.tip) : pre?.tip ? String(pre.tip) : "",
+  );
 
   const cur = getCurrency(currency);
   const taxNum = Number.parseFloat(tax) || 0;
@@ -361,6 +393,60 @@ function AddExpenseForm({
     }
     setUploading(false);
     if (fileRef.current) fileRef.current.value = "";
+  };
+
+  const scanReceipt = async () => {
+    if (!receiptUrl || scanning) return;
+    setScanning(true);
+    try {
+      const { receipt } = await callAiApi<{ receipt: ScannedReceipt }>(
+        "/api/ai/scan-receipt",
+        { image: receiptUrl },
+      );
+      if (receipt.merchant) setDescription(receipt.merchant);
+      if (receipt.category) {
+        setCategory(receipt.category);
+        setCategorySuggested(true);
+      }
+      if (receipt.date) setDate(receipt.date);
+      if (receipt.items && receipt.items.length > 0) {
+        setItemized(true);
+        setItems(
+          receipt.items.map((it) => ({
+            id: uid("li_"),
+            name: it.name,
+            amount: it.amount,
+            participantIds: [...participantIds],
+          })),
+        );
+        if (receipt.tax) setTax(String(receipt.tax));
+        if (receipt.tip) setTip(String(receipt.tip));
+      } else if (receipt.total) {
+        setAmount(String(receipt.total));
+      }
+      toast.success("Receipt scanned — check the details below");
+    } catch (err) {
+      toast.error(
+        err instanceof Error ? err.message : "Couldn't scan that receipt",
+      );
+    }
+    setScanning(false);
+  };
+
+  const suggestCategory = async () => {
+    if (!description.trim() || category !== "general") return;
+    try {
+      const { category: suggested } = await callAiApi<{ category: string }>(
+        "/api/ai/categorize",
+        { description: description.trim() },
+      );
+      if (suggested && suggested !== "general") {
+        setCategory(suggested);
+        setCategorySuggested(true);
+      }
+    } catch {
+      // silent — auto-categorize is a nicety, not critical
+    }
   };
 
   const save = () => {
@@ -602,6 +688,7 @@ function AddExpenseForm({
             placeholder="e.g. Dinner, Groceries"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
+            onBlur={suggestCategory}
           />
         </div>
 
@@ -654,8 +741,21 @@ function AddExpenseForm({
         {/* Category / group */}
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <div className="space-y-1.5">
-            <Label>Category</Label>
-            <Select value={category} onValueChange={setCategory}>
+            <Label className="flex items-center gap-1.5">
+              Category
+              {categorySuggested && (
+                <span className="flex items-center gap-0.5 text-[10px] font-semibold text-primary">
+                  <Sparkles className="h-3 w-3" /> AI suggested
+                </span>
+              )}
+            </Label>
+            <Select
+              value={category}
+              onValueChange={(v) => {
+                setCategory(v);
+                setCategorySuggested(false);
+              }}
+            >
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
@@ -1023,19 +1123,36 @@ function AddExpenseForm({
               onChange={handleFile}
             />
             {receiptUrl ? (
-              <div className="relative w-fit">
-                <img
-                  src={receiptUrl}
-                  alt="Receipt"
-                  className="h-24 w-24 rounded-lg border border-border object-cover"
-                />
-                <button
+              <div className="space-y-1.5">
+                <div className="relative w-fit">
+                  <img
+                    src={receiptUrl}
+                    alt="Receipt"
+                    className="h-24 w-24 rounded-lg border border-border object-cover"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setReceiptUrl(undefined)}
+                    className="absolute -right-2 -top-2 rounded-full bg-sw-charcoal p-1 text-white shadow"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                </div>
+                <Button
                   type="button"
-                  onClick={() => setReceiptUrl(undefined)}
-                  className="absolute -right-2 -top-2 rounded-full bg-sw-charcoal p-1 text-white shadow"
+                  variant="outline"
+                  size="sm"
+                  className="w-24 gap-1 px-2 text-xs"
+                  disabled={scanning}
+                  onClick={scanReceipt}
                 >
-                  <X className="h-3 w-3" />
-                </button>
+                  {scanning ? (
+                    <Loader2 className="h-3 w-3 animate-spin" />
+                  ) : (
+                    <Sparkles className="h-3 w-3" />
+                  )}
+                  {scanning ? "Scanning" : "Scan w/ AI"}
+                </Button>
               </div>
             ) : (
               <button

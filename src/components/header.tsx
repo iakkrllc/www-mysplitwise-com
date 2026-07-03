@@ -33,6 +33,7 @@ import {
 import { UserAvatar } from "./user-avatar";
 import { ThemeToggle } from "./theme-toggle";
 import { NotificationsBell } from "./notifications-bell";
+import { VoiceAddButton } from "./voice-add-button";
 
 export function Header() {
   const { currentUser, setView, resetData } = useStore();
@@ -99,6 +100,7 @@ export function Header() {
         <span className="hidden sm:inline">Add an expense</span>
         <span className="sm:hidden">Add</span>
       </Button>
+      <VoiceAddButton />
       <Button
         variant="orange"
         onClick={() => openModal({ kind: "settle" })}

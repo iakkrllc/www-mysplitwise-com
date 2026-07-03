@@ -15,7 +15,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
-import { Plus, Scale, MoreVertical, UserMinus } from "lucide-react";
+import { Plus, Scale, MoreVertical, UserMinus, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
@@ -162,6 +162,16 @@ export function FriendView({ friendId }: { friendId: string }) {
             amount={-balance}
             note={`Settling up via mysplitwise`}
           />
+        )}
+        {!settled && owed && (
+          <Button
+            variant="outline"
+            size="sm"
+            className="gap-1.5"
+            onClick={() => openModal({ kind: "reminderDraft", friendId })}
+          >
+            <Sparkles className="h-3.5 w-3.5" /> Remind
+          </Button>
         )}
       </div>
 
