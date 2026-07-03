@@ -18,7 +18,7 @@ import { CreateGroupDialog } from "./dialogs/create-group-dialog";
 import { AddFriendDialog } from "./dialogs/add-friend-dialog";
 import { ExpenseDetailDialog } from "./dialogs/expense-detail-dialog";
 import { Toaster } from "./ui/sonner";
-import { MysplitwiseMark } from "./mysplitwise-logo";
+import { MySplitzMark } from "./mysplitz-logo";
 
 function ViewRouter() {
   const { view } = useStore();
@@ -47,7 +47,7 @@ function ViewRouter() {
 function LoadingState() {
   return (
     <div className="flex h-[60vh] flex-col items-center justify-center gap-3 text-muted-foreground">
-      <MysplitwiseMark size={42} className="animate-pulse" />
+      <MySplitzMark size={42} className="animate-pulse" />
       <p className="text-sm font-medium">Loading your expenses…</p>
     </div>
   );

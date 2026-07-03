@@ -21,7 +21,7 @@ import type {
   User,
 } from "./types";
 
-const STORAGE_KEY = "mysplitwise.state.v1";
+const STORAGE_KEY = "mysplitz.state.v1";
 
 export function uid(prefix = "id_"): string {
   return (
@@ -99,7 +99,7 @@ function processRecurring(state: AppState): AppState {
 }
 
 const AVATAR_COLORS = [
-  "#5BC5A7", "#FF8A5B", "#6C8AE4", "#C566B5", "#E4694A",
+  "#7C3AED", "#FF8A5B", "#6C8AE4", "#C566B5", "#E4694A",
   "#5BA0C5", "#7FB069", "#E4A85B", "#B05BC5", "#5BC5C0",
   "#E45B6E", "#9C7B5A",
 ];

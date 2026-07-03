@@ -89,7 +89,7 @@ export function exportExpensesCSV(expenses: Expense[], h: ExportHelpers) {
     ],
     rows,
   );
-  downloadFile("mysplitwise-expenses.csv", csv, "text/csv;charset=utf-8;");
+  downloadFile("mysplitz-expenses.csv", csv, "text/csv;charset=utf-8;");
 }
 
 export async function exportExpensesPDF(expenses: Expense[], h: ExportHelpers) {
@@ -98,7 +98,7 @@ export async function exportExpensesPDF(expenses: Expense[], h: ExportHelpers) {
   const doc = new jsPDF({ orientation: "landscape" });
   doc.setFontSize(18);
   doc.setTextColor(40, 48, 52);
-  doc.text("Mysplitwise — Expense report", 14, 16);
+  doc.text("MYSplitz — Expense report", 14, 16);
   doc.setFontSize(10);
   doc.setTextColor(120, 130, 135);
   doc.text(
@@ -128,7 +128,7 @@ export async function exportExpensesPDF(expenses: Expense[], h: ExportHelpers) {
     columnStyles: { 5: { halign: "right" }, 6: { halign: "right" } },
   });
 
-  doc.save("mysplitwise-expenses.pdf");
+  doc.save("mysplitz-expenses.pdf");
 }
 
 export interface BalanceRow {
@@ -144,7 +144,7 @@ export function exportBalancesCSV(rows: BalanceRow[], baseCurrency: string) {
     baseCurrency,
   ]);
   const csv = rowsToCSV(["Person", "Direction", "Amount", "Currency"], body);
-  downloadFile("mysplitwise-balances.csv", csv, "text/csv;charset=utf-8;");
+  downloadFile("mysplitz-balances.csv", csv, "text/csv;charset=utf-8;");
 }
 
 export async function exportBalancesPDF(
@@ -156,7 +156,7 @@ export async function exportBalancesPDF(
   const doc = new jsPDF();
   doc.setFontSize(18);
   doc.setTextColor(40, 48, 52);
-  doc.text("Mysplitwise — Balances", 14, 16);
+  doc.text("MYSplitz — Balances", 14, 16);
   doc.setFontSize(10);
   doc.setTextColor(120, 130, 135);
   doc.text(`Generated ${new Date().toLocaleString()} · base ${baseCurrency}`, 14, 22);
@@ -175,5 +175,5 @@ export async function exportBalancesPDF(
     columnStyles: { 2: { halign: "right" } },
   });
 
-  doc.save("mysplitwise-balances.pdf");
+  doc.save("mysplitz-balances.pdf");
 }

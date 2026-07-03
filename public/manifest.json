@@ -1,13 +1,13 @@
 {
-  "name": "Mysplitwise — Split expenses with friends",
-  "short_name": "Mysplitwise",
+  "name": "MYSplitz — Split expenses with friends",
+  "short_name": "MYSplitz",
   "description": "Split bills with friends and family, track balances and settle up.",
   "start_url": "/app",
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#ffffff",
-  "theme_color": "#5BC5A7",
+  "theme_color": "#7C3AED",
   "categories": ["finance", "productivity", "utilities"],
   "icons": [
     {

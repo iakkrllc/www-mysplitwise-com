@@ -38,7 +38,7 @@ export interface Category {
 export const CATEGORIES: Category[] = [
   // Uncategorized / general
   { id: "general", name: "General", group: "Uncategorized", icon: Receipt, color: "#8E9CA3" },
-  { id: "payment", name: "Payment", group: "Uncategorized", icon: Banknote, color: "#5BC5A7" },
+  { id: "payment", name: "Payment", group: "Uncategorized", icon: Banknote, color: "#7C3AED" },
 
   // Food and drink
   { id: "dining", name: "Dining out", group: "Food and drink", icon: Utensils, color: "#FF8A5B" },

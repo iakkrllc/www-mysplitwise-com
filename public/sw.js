@@ -1,4 +1,4 @@
-const CACHE = "mysplitwise-v1";
+const CACHE = "mysplitz-v1";
 const CORE = ["/", "/app", "/manifest.json", "/icon.svg"];
 
 self.addEventListener("install", (event) => {

@@ -12,14 +12,14 @@ const mulish = Mulish({
 });
 
 export const metadata: Metadata = {
-  title: "Mysplitwise — Split expenses with friends",
+  title: "MYSplitz — Split expenses with friends",
   description:
-    "mysplitwise makes it easy to split bills with friends and family. Track balances, organize group expenses, and settle up. Less stress when sharing expenses with anyone.",
+    "MYSplitz makes it easy to split bills with friends and family. Track balances, organize group expenses, and settle up. Less stress when sharing expenses with anyone.",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "Mysplitwise",
+    title: "MYSplitz",
   },
   icons: {
     icon: [{ url: "/icon.svg", type: "image/svg+xml" }],
@@ -29,8 +29,8 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = {
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#5BC5A7" },
-    { media: "(prefers-color-scheme: dark)", color: "#0f2e29" },
+    { media: "(prefers-color-scheme: light)", color: "#7C3AED" },
+    { media: "(prefers-color-scheme: dark)", color: "#1e1730" },
   ],
 };
 

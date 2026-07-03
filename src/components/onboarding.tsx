@@ -14,7 +14,7 @@ import {
 } from "./ui/select";
 import { useStore } from "@/lib/store";
 import { CURRENCIES } from "@/lib/currency";
-import { MysplitwiseLogo } from "./mysplitwise-logo";
+import { MySplitzLogo } from "./mysplitz-logo";
 import { cn } from "@/lib/utils";
 import { ArrowRight, Check, Sparkles, FilePlus2 } from "lucide-react";
 
@@ -46,7 +46,7 @@ export function Onboarding() {
     <Dialog open={open} onOpenChange={(o) => !o && setOnboarded(true)}>
       <DialogContent className="gap-0 overflow-hidden p-0 sm:max-w-md">
         <div className="flex items-center justify-between border-b border-border px-6 py-4">
-          <MysplitwiseLogo size={24} />
+          <MySplitzLogo size={24} />
           <div className="flex gap-1.5">
             {[0, 1, 2].map((i) => (
               <span
@@ -65,7 +65,7 @@ export function Onboarding() {
             <div className="space-y-4">
               <div>
                 <h2 className="text-xl font-extrabold text-sw-charcoal">
-                  Welcome to Mysplitwise
+                  Welcome to MYSplitz
                 </h2>
                 <p className="mt-1 text-sm text-muted-foreground">
                   Let&apos;s set things up. First, what should we call you?

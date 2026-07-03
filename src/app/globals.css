@@ -5,81 +5,81 @@
 @layer base {
   :root {
     --background: 0 0% 100%;
-    --foreground: 200 12% 18%;
+    --foreground: 250 12% 18%;
     --card: 0 0% 100%;
-    --card-foreground: 200 12% 18%;
+    --card-foreground: 250 12% 18%;
     --popover: 0 0% 100%;
-    --popover-foreground: 200 12% 18%;
-    --primary: 168 60% 45%;
+    --popover-foreground: 250 12% 18%;
+    --primary: 258 82% 62%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 168 30% 95%;
-    --secondary-foreground: 174 40% 25%;
-    --muted: 200 16% 96%;
-    --muted-foreground: 200 8% 46%;
-    --accent: 168 40% 94%;
-    --accent-foreground: 174 45% 24%;
-    --destructive: 14 100% 59%;
+    --secondary: 258 45% 96%;
+    --secondary-foreground: 258 45% 30%;
+    --muted: 250 16% 96%;
+    --muted-foreground: 250 8% 46%;
+    --accent: 258 50% 95%;
+    --accent-foreground: 258 50% 28%;
+    --destructive: 350 89% 60%;
     --destructive-foreground: 0 0% 100%;
-    --border: 200 14% 90%;
-    --input: 200 14% 88%;
-    --ring: 168 60% 45%;
+    --border: 250 14% 90%;
+    --input: 250 14% 88%;
+    --ring: 258 82% 62%;
     --radius: 0.6rem;
 
-    /* Mysplitwise brand palette */
-    --sw-green: 162 47% 56%;        /* #5BC5A7 brand teal */
-    --sw-green-strong: 168 73% 44%; /* #1CC29F action green */
-    --sw-green-dark: 172 56% 32%;   /* darker for text on white */
-    --sw-orange: 14 100% 59%;       /* #FF652F you owe / settle up */
-    --sw-orange-dark: 14 79% 50%;
-    --sw-charcoal: 200 13% 23%;     /* #333b40 header text */
-    --sw-ink: 200 16% 20%;
-    --sw-gray: 200 8% 46%;
-    --sw-faint: 200 20% 97%;
+    /* MYSplitz brand palette */
+    --sw-green: 142 60% 42%;        /* #22A85A owed / positive */
+    --sw-green-strong: 142 71% 38%; /* #14A048 action green */
+    --sw-green-dark: 142 55% 26%;   /* darker for text on white */
+    --sw-orange: 340 82% 58%;       /* #E63879 you owe / settle up */
+    --sw-orange-dark: 340 75% 48%;
+    --sw-charcoal: 250 13% 23%;     /* header text */
+    --sw-ink: 250 16% 20%;
+    --sw-gray: 250 8% 46%;
+    --sw-faint: 250 20% 97%;
 
-    --chart-1: 162 47% 56%;
-    --chart-2: 14 100% 59%;
-    --chart-3: 41 96% 56%;
-    --chart-4: 199 64% 53%;
-    --chart-5: 280 45% 60%;
+    --chart-1: 258 82% 62%;
+    --chart-2: 350 82% 60%;
+    --chart-3: 142 60% 42%;
+    --chart-4: 38 92% 55%;
+    --chart-5: 205 70% 55%;
   }
 
   .dark {
-    --background: 200 24% 8%;
-    --foreground: 200 14% 92%;
-    --card: 200 20% 11%;
-    --card-foreground: 200 14% 92%;
-    --popover: 200 22% 10%;
-    --popover-foreground: 200 14% 92%;
-    --primary: 168 62% 46%;
-    --primary-foreground: 200 30% 6%;
-    --secondary: 174 26% 17%;
-    --secondary-foreground: 168 45% 78%;
-    --muted: 200 16% 16%;
-    --muted-foreground: 200 10% 62%;
-    --accent: 174 24% 19%;
-    --accent-foreground: 168 45% 82%;
-    --destructive: 14 100% 62%;
+    --background: 250 24% 8%;
+    --foreground: 250 14% 92%;
+    --card: 250 20% 11%;
+    --card-foreground: 250 14% 92%;
+    --popover: 250 22% 10%;
+    --popover-foreground: 250 14% 92%;
+    --primary: 258 85% 68%;
+    --primary-foreground: 250 30% 8%;
+    --secondary: 258 26% 18%;
+    --secondary-foreground: 258 45% 82%;
+    --muted: 250 16% 16%;
+    --muted-foreground: 250 10% 62%;
+    --accent: 258 24% 20%;
+    --accent-foreground: 258 45% 84%;
+    --destructive: 350 90% 65%;
     --destructive-foreground: 0 0% 100%;
-    --border: 200 14% 20%;
-    --input: 200 14% 24%;
-    --ring: 168 62% 46%;
+    --border: 250 14% 20%;
+    --input: 250 14% 24%;
+    --ring: 258 85% 68%;
 
-    /* Mysplitwise brand palette (dark) */
-    --sw-green: 162 50% 55%;
-    --sw-green-strong: 168 60% 48%;
-    --sw-green-dark: 162 55% 64%;
-    --sw-orange: 14 100% 64%;
-    --sw-orange-dark: 14 85% 58%;
-    --sw-charcoal: 200 14% 91%;
-    --sw-ink: 200 14% 92%;
-    --sw-gray: 200 10% 62%;
-    --sw-faint: 200 22% 10%;
+    /* MYSplitz brand palette (dark) */
+    --sw-green: 142 55% 58%;
+    --sw-green-strong: 142 60% 52%;
+    --sw-green-dark: 142 55% 68%;
+    --sw-orange: 350 90% 68%;
+    --sw-orange-dark: 340 82% 60%;
+    --sw-charcoal: 250 14% 91%;
+    --sw-ink: 250 14% 92%;
+    --sw-gray: 250 10% 62%;
+    --sw-faint: 250 22% 10%;
 
-    --chart-1: 162 50% 55%;
-    --chart-2: 14 100% 64%;
-    --chart-3: 41 90% 60%;
-    --chart-4: 199 64% 58%;
-    --chart-5: 280 50% 66%;
+    --chart-1: 258 85% 68%;
+    --chart-2: 350 90% 68%;
+    --chart-3: 142 55% 58%;
+    --chart-4: 38 90% 62%;
+    --chart-5: 205 70% 62%;
   }
 }
 

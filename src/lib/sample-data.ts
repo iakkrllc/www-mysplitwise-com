@@ -12,7 +12,7 @@ import type {
 export const CURRENT_USER_ID = "u_alex";
 
 export const SAMPLE_USERS: User[] = [
-  { id: "u_alex", name: "Alex Morgan", email: "alex@mysplitwise.com", avatarColor: "#5BC5A7" },
+  { id: "u_alex", name: "Alex Morgan", email: "alex@mysplitz.com", avatarColor: "#7C3AED" },
   { id: "u_marcel", name: "Marcel Proust", email: "marcel@example.com", avatarColor: "#FF8A5B" },
   { id: "u_noor", name: "Noor Idris", email: "noor@example.com", avatarColor: "#6C8AE4" },
   { id: "u_ada", name: "Ada Lovelace", email: "ada@example.com", avatarColor: "#C566B5" },

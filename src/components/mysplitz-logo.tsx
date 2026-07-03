@@ -1,6 +1,6 @@
 import { cn } from "@/lib/utils";
 
-export function MysplitwiseMark({
+export function MySplitzMark({
   className,
   size = 28,
 }: {
@@ -15,21 +15,38 @@ export function MysplitwiseMark({
       className={cn("shrink-0", className)}
       aria-hidden="true"
     >
-      {/* top-left facet (lightest) */}
-      <polygon points="50,5 6,49 50,49" fill="#8FD8C2" />
-      {/* top-right facet */}
-      <polygon points="50,5 94,49 50,49" fill="#5BC5A7" />
-      {/* bottom-left facet */}
-      <polygon points="6,49 50,95 50,49" fill="#46AE93" />
-      {/* bottom-right facet (dark slate) */}
-      <polygon points="94,49 50,95 50,49" fill="#3D454B" />
-      {/* subtle inner highlight */}
-      <polygon points="50,5 6,49 50,49" fill="#ffffff" opacity="0.12" />
+      <rect
+        x="14"
+        y="22"
+        width="58"
+        height="58"
+        rx="16"
+        fill="#22A85A"
+        transform="rotate(-10 43 51)"
+      />
+      <rect
+        x="28"
+        y="20"
+        width="58"
+        height="58"
+        rx="16"
+        fill="#7C3AED"
+        opacity="0.94"
+        transform="rotate(10 57 49)"
+      />
+      <path
+        d="M40 38 L60 38 L48 50 L60 62 L40 62"
+        fill="none"
+        stroke="#ffffff"
+        strokeWidth="7"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
     </svg>
   );
 }
 
-export function MysplitwiseLogo({
+export function MySplitzLogo({
   className,
   size = 28,
   wordmark = true,
@@ -40,13 +57,13 @@ export function MysplitwiseLogo({
 }) {
   return (
     <div className={cn("flex items-center gap-2", className)}>
-      <MysplitwiseMark size={size} />
+      <MySplitzMark size={size} />
       {wordmark && (
         <span
           className="font-extrabold tracking-tight text-sw-charcoal"
           style={{ fontSize: size * 0.82 }}
         >
-          Mysplitwise
+          MYSplitz
         </span>
       )}
     </div>

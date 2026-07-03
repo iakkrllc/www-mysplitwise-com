@@ -4,7 +4,7 @@ import { UIProvider } from "@/lib/ui-store";
 import { AppShell } from "@/components/app-shell";
 
 export const metadata: Metadata = {
-  title: "Dashboard · Mysplitwise",
+  title: "Dashboard · MYSplitz",
   description: "Track balances, split expenses and settle up.",
 };
 

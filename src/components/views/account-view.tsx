@@ -20,7 +20,7 @@ import { Check, RotateCcw, Globe, Download, Upload } from "lucide-react";
 import { toast } from "sonner";
 
 const COLORS = [
-  "#5BC5A7", "#FF8A5B", "#6C8AE4", "#C566B5", "#E4694A",
+  "#7C3AED", "#FF8A5B", "#6C8AE4", "#C566B5", "#E4694A",
   "#5BA0C5", "#7FB069", "#E4A85B", "#B05BC5", "#5BC5C0",
   "#E45B6E", "#9C7B5A",
 ];
@@ -39,7 +39,7 @@ export function AccountView() {
 
   const backup = () => {
     downloadFile(
-      `mysplitwise-backup-${new Date().toISOString().slice(0, 10)}.json`,
+      `mysplitz-backup-${new Date().toISOString().slice(0, 10)}.json`,
       exportState(),
       "application/json",
     );

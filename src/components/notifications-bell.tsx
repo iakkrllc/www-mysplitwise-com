@@ -115,7 +115,7 @@ export function NotificationsBell() {
           timed.push({
             id: `p-${e.id}`,
             icon: ArrowRightLeft,
-            iconColor: "#5BC5A7",
+            iconColor: "#22A85A",
             at: e.createdAt,
             title: (
               <>
@@ -140,7 +140,7 @@ export function NotificationsBell() {
         standing.push({
           id: `owed-${f.id}`,
           icon: HandCoins,
-          iconColor: "#1f9e83",
+          iconColor: "#145C31",
           title: (
             <>
               <b>{f.name.split(" ")[0]}</b> owes you {formatMoney(bal, base)}
@@ -156,7 +156,7 @@ export function NotificationsBell() {
         standing.push({
           id: `owe-${f.id}`,
           icon: Scale,
-          iconColor: "#FF652F",
+          iconColor: "#E63879",
           title: (
             <>
               You owe <b>{f.name.split(" ")[0]}</b> {formatMoney(-bal, base)}

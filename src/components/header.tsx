@@ -17,7 +17,7 @@ import {
 } from "lucide-react";
 import { Sheet, SheetContent, SheetTitle } from "./ui/sheet";
 import { SidebarContent } from "./sidebar";
-import { MysplitwiseLogo, MysplitwiseMark } from "./mysplitwise-logo";
+import { MySplitzLogo, MySplitzMark } from "./mysplitz-logo";
 import { Button } from "./ui/button";
 import { useStore } from "@/lib/store";
 import { useUI } from "@/lib/ui-store";
@@ -58,10 +58,10 @@ export function Header() {
         className="flex items-center"
       >
         <span className="hidden sm:block">
-          <MysplitwiseLogo size={26} />
+          <MySplitzLogo size={26} />
         </span>
         <span className="sm:hidden">
-          <MysplitwiseMark size={26} />
+          <MySplitzMark size={26} />
         </span>
       </button>
 
@@ -166,7 +166,7 @@ export function Header() {
         <SheetContent side="left" className="w-[280px] p-0">
           <SheetTitle className="sr-only">Navigation</SheetTitle>
           <div className="flex h-14 items-center border-b px-4">
-            <MysplitwiseLogo size={24} />
+            <MySplitzLogo size={24} />
           </div>
           <div className="h-[calc(100%-3.5rem)] overflow-y-auto">
             <SidebarContent onNavigate={() => setDrawerOpen(false)} />
