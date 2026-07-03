@@ -7,6 +7,7 @@ import { downloadFile } from "@/lib/export";
 import { uploadAvatar } from "@/lib/avatar-upload";
 import { UserAvatar } from "../user-avatar";
 import { InviteFriend } from "../invite-friend";
+import { TrendsPanel } from "../trends-panel";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
@@ -85,8 +86,9 @@ export function AccountView() {
       const url = await uploadAvatar(currentUser.id, file);
       updateProfile({ avatarUrl: url });
       toast.success("Photo updated");
-    } catch {
-      toast.error("Couldn't upload that photo — try again");
+    } catch (err) {
+      const detail = err instanceof Error ? err.message : "Unknown error";
+      toast.error(`Couldn't upload photo: ${detail}`);
     }
     setAvatarUploading(false);
     if (photoRef.current) photoRef.current.value = "";
@@ -245,6 +247,11 @@ export function AccountView() {
             </SelectContent>
           </Select>
         </div>
+      </div>
+
+      {/* Trends */}
+      <div className="mt-6">
+        <TrendsPanel />
       </div>
 
       {/* Invite + updates */}
