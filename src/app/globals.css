@@ -1,0 +1,182 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 200 12% 18%;
+    --card: 0 0% 100%;
+    --card-foreground: 200 12% 18%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 200 12% 18%;
+    --primary: 168 60% 45%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 168 30% 95%;
+    --secondary-foreground: 174 40% 25%;
+    --muted: 200 16% 96%;
+    --muted-foreground: 200 8% 46%;
+    --accent: 168 40% 94%;
+    --accent-foreground: 174 45% 24%;
+    --destructive: 14 100% 59%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 200 14% 90%;
+    --input: 200 14% 88%;
+    --ring: 168 60% 45%;
+    --radius: 0.6rem;
+
+    /* Mysplitwise brand palette */
+    --sw-green: 162 47% 56%;        /* #5BC5A7 brand teal */
+    --sw-green-strong: 168 73% 44%; /* #1CC29F action green */
+    --sw-green-dark: 172 56% 32%;   /* darker for text on white */
+    --sw-orange: 14 100% 59%;       /* #FF652F you owe / settle up */
+    --sw-orange-dark: 14 79% 50%;
+    --sw-charcoal: 200 13% 23%;     /* #333b40 header text */
+    --sw-ink: 200 16% 20%;
+    --sw-gray: 200 8% 46%;
+    --sw-faint: 200 20% 97%;
+
+    --chart-1: 162 47% 56%;
+    --chart-2: 14 100% 59%;
+    --chart-3: 41 96% 56%;
+    --chart-4: 199 64% 53%;
+    --chart-5: 280 45% 60%;
+  }
+
+  .dark {
+    --background: 200 24% 8%;
+    --foreground: 200 14% 92%;
+    --card: 200 20% 11%;
+    --card-foreground: 200 14% 92%;
+    --popover: 200 22% 10%;
+    --popover-foreground: 200 14% 92%;
+    --primary: 168 62% 46%;
+    --primary-foreground: 200 30% 6%;
+    --secondary: 174 26% 17%;
+    --secondary-foreground: 168 45% 78%;
+    --muted: 200 16% 16%;
+    --muted-foreground: 200 10% 62%;
+    --accent: 174 24% 19%;
+    --accent-foreground: 168 45% 82%;
+    --destructive: 14 100% 62%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 200 14% 20%;
+    --input: 200 14% 24%;
+    --ring: 168 62% 46%;
+
+    /* Mysplitwise brand palette (dark) */
+    --sw-green: 162 50% 55%;
+    --sw-green-strong: 168 60% 48%;
+    --sw-green-dark: 162 55% 64%;
+    --sw-orange: 14 100% 64%;
+    --sw-orange-dark: 14 85% 58%;
+    --sw-charcoal: 200 14% 91%;
+    --sw-ink: 200 14% 92%;
+    --sw-gray: 200 10% 62%;
+    --sw-faint: 200 22% 10%;
+
+    --chart-1: 162 50% 55%;
+    --chart-2: 14 100% 64%;
+    --chart-3: 41 90% 60%;
+    --chart-4: 199 64% 58%;
+    --chart-5: 280 50% 66%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  html {
+    scroll-behavior: smooth;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-family: var(--font-mulish), system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+}
+
+@layer utilities {
+  .text-owe {
+    color: hsl(var(--sw-orange));
+  }
+  .text-owed {
+    color: hsl(var(--sw-green-dark));
+  }
+  .bg-sw-green {
+    background-color: hsl(var(--sw-green));
+  }
+  .bg-sw-green-strong {
+    background-color: hsl(var(--sw-green-strong));
+  }
+  .bg-sw-orange {
+    background-color: hsl(var(--sw-orange));
+  }
+  .text-sw-green {
+    color: hsl(var(--sw-green));
+  }
+  .text-sw-green-dark {
+    color: hsl(var(--sw-green-dark));
+  }
+  .text-sw-orange {
+    color: hsl(var(--sw-orange));
+  }
+  .text-sw-charcoal {
+    color: hsl(var(--sw-charcoal));
+  }
+
+  /* faint dotted connector used in the dashboard group rows */
+  .sw-connector {
+    border-left: 1px dashed hsl(var(--border));
+  }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 9px;
+  height: 9px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: hsl(200 10% 82%);
+  border-radius: 9999px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(200 10% 70%);
+  background-clip: content-box;
+}
+
+/* Subtle entrance animations */
+@keyframes sw-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.animate-fade-up {
+  animation: sw-fade-up 0.35s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes sw-pop {
+  0% {
+    transform: scale(0.9);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+.animate-pop {
+  animation: sw-pop 0.25s ease-out both;
+}
