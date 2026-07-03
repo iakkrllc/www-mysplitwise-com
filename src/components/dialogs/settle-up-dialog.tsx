@@ -22,11 +22,22 @@ import { useStore } from "@/lib/store";
 import { useUI, type Modal } from "@/lib/ui-store";
 import { balanceBetween, formatMoney, round2 } from "@/lib/calculations";
 import { getCurrency } from "@/lib/currency";
-import type { Expense } from "@/lib/types";
+import type { Expense, PaymentMethod } from "@/lib/types";
 import { UserAvatar } from "../user-avatar";
 import { PayMenu } from "../pay-menu";
 import { ArrowRight } from "lucide-react";
 import { toast } from "sonner";
+
+const PAYMENT_METHODS: { id: PaymentMethod; label: string }[] = [
+  { id: "cash", label: "Cash" },
+  { id: "card", label: "Card" },
+  { id: "wire", label: "Wire transfer" },
+  { id: "zelle", label: "Zelle" },
+  { id: "venmo", label: "Venmo" },
+  { id: "cashapp", label: "Cash App" },
+  { id: "paypal", label: "PayPal" },
+  { id: "other", label: "Other" },
+];
 
 export function SettleUpDialog() {
   const { modal, closeModal } = useUI();
@@ -99,6 +110,7 @@ function SettleForm({
     String(suggest(modal.fromId ?? currentUser.id, defaultTo) || ""),
   );
   const [date, setDate] = useState(new Date().toISOString().slice(0, 10));
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("cash");
 
   const amountNum = Number.parseFloat(amount) || 0;
   const from = getUser(fromId);
@@ -138,6 +150,7 @@ function SettleForm({
       ],
       createdBy: currentUser.id,
       isSettlement: true,
+      paymentMethod,
     };
     addExpense(expense);
     toast.success("Payment recorded");
@@ -230,14 +243,34 @@ function SettleForm({
           })()}
         </div>
 
-        <div className="space-y-1.5">
-          <Label htmlFor="settle-date">Date</Label>
-          <Input
-            id="settle-date"
-            type="date"
-            value={date}
-            onChange={(e) => setDate(e.target.value)}
-          />
+        <div className="grid grid-cols-2 gap-2">
+          <div className="space-y-1.5">
+            <Label htmlFor="settle-date">Date</Label>
+            <Input
+              id="settle-date"
+              type="date"
+              value={date}
+              onChange={(e) => setDate(e.target.value)}
+            />
+          </div>
+          <div className="space-y-1.5">
+            <Label>How was this paid</Label>
+            <Select
+              value={paymentMethod}
+              onValueChange={(v) => setPaymentMethod(v as PaymentMethod)}
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {PAYMENT_METHODS.map((m) => (
+                  <SelectItem key={m.id} value={m.id}>
+                    {m.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
         </div>
       </div>
 

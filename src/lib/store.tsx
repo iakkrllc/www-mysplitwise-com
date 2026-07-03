@@ -115,6 +115,7 @@ export type View =
   | { type: "dashboard" }
   | { type: "activity" }
   | { type: "all-expenses" }
+  | { type: "pay" }
   | { type: "recurring" }
   | { type: "friends" }
   | { type: "group"; id: string }

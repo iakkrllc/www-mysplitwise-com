@@ -60,8 +60,18 @@ export interface Expense {
   items?: LineItem[];
   tax?: number;
   tip?: number;
-  paymentMethod?: "cash" | "card";
+  paymentMethod?: PaymentMethod;
 }
+
+export type PaymentMethod =
+  | "cash"
+  | "card"
+  | "wire"
+  | "zelle"
+  | "venmo"
+  | "cashapp"
+  | "paypal"
+  | "other";
 
 export type SplitMethod = "equal" | "exact" | "percentage" | "shares";
 

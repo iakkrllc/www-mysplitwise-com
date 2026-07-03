@@ -34,6 +34,7 @@ import type {
   ExpenseShare,
   Frequency,
   LineItem,
+  PaymentMethod,
   SplitMethod,
 } from "@/lib/types";
 import { UserAvatar } from "../user-avatar";
@@ -118,7 +119,7 @@ function AddExpenseForm({
   );
   const [notes, setNotes] = useState(editing?.notes ?? "");
   const [uploading, setUploading] = useState(false);
-  const [paymentMethod, setPaymentMethod] = useState<"cash" | "card">(
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>(
     editing?.paymentMethod ?? "card",
   );
   const fileRef = useRef<HTMLInputElement>(null);

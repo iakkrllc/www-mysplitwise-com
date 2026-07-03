@@ -31,6 +31,7 @@ import {
   Heart,
   Folder,
   RotateCcw,
+  Wallet,
 } from "lucide-react";
 import type { GroupType } from "@/lib/types";
 
@@ -111,6 +112,9 @@ export function CommandPalette() {
           </CommandItem>
           <CommandItem onSelect={() => go({ type: "all-expenses" })}>
             <ReceiptText className="mr-2 h-4 w-4" /> All expenses
+          </CommandItem>
+          <CommandItem onSelect={() => go({ type: "pay" })}>
+            <Wallet className="mr-2 h-4 w-4" /> Pay
           </CommandItem>
           <CommandItem onSelect={() => go({ type: "recurring" })}>
             <Repeat className="mr-2 h-4 w-4" /> Recurring

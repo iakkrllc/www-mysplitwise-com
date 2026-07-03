@@ -12,6 +12,7 @@ import {
   Folder,
   Repeat,
   Users,
+  Wallet,
 } from "lucide-react";
 import { useStore, type View } from "@/lib/store";
 import { useUI } from "@/lib/ui-store";
@@ -100,6 +101,9 @@ export function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
       })}
       {navItem("All expenses", <ReceiptText className="h-[18px] w-[18px]" />, {
         type: "all-expenses",
+      })}
+      {navItem("Pay", <Wallet className="h-[18px] w-[18px]" />, {
+        type: "pay",
       })}
       {navItem("Recurring", <Repeat className="h-[18px] w-[18px]" />, {
         type: "recurring",

@@ -8,6 +8,7 @@ import { GroupView } from "./views/group-view";
 import { FriendView } from "./views/friend-view";
 import { ActivityView } from "./views/activity-view";
 import { AllExpensesView } from "./views/all-expenses-view";
+import { PayView } from "./views/pay-view";
 import { RecurringView } from "./views/recurring-view";
 import { FriendsView } from "./views/friends-view";
 import { AccountView } from "./views/account-view";
@@ -30,6 +31,8 @@ function ViewRouter() {
       return <ActivityView />;
     case "all-expenses":
       return <AllExpensesView />;
+    case "pay":
+      return <PayView />;
     case "recurring":
       return <RecurringView />;
     case "friends":

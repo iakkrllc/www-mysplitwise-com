@@ -29,6 +29,18 @@ import {
   CreditCard,
 } from "lucide-react";
 import { toast } from "sonner";
+import type { PaymentMethod } from "@/lib/types";
+
+const PAYMENT_METHOD_LABELS: Record<PaymentMethod, string> = {
+  cash: "cash",
+  card: "card",
+  wire: "wire transfer",
+  zelle: "Zelle",
+  venmo: "Venmo",
+  cashapp: "Cash App",
+  paypal: "PayPal",
+  other: "other",
+};
 
 function shortTime(iso: string): string {
   const d = new Date(iso);
@@ -130,7 +142,8 @@ export function ExpenseDetailDialog() {
                     <CreditCard className="h-4 w-4" />
                   )}
                   <span>
-                    Paid with {expense.paymentMethod === "cash" ? "cash" : "card"}
+                    {expense.isSettlement ? "Paid via" : "Paid with"}{" "}
+                    {PAYMENT_METHOD_LABELS[expense.paymentMethod]}
                   </span>
                 </div>
               )}
