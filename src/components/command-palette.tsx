@@ -168,8 +168,15 @@ export function CommandPalette() {
 
         <CommandSeparator />
         <CommandGroup heading="Danger zone">
-          <CommandItem onSelect={() => run(resetData)}>
-            <RotateCcw className="mr-2 h-4 w-4" /> Reset sample data
+          <CommandItem
+            onSelect={() =>
+              run(() => {
+                if (window.confirm("Clear all your data? This can't be undone."))
+                  resetData();
+              })
+            }
+          >
+            <RotateCcw className="mr-2 h-4 w-4" /> Clear all data
           </CommandItem>
         </CommandGroup>
       </CommandList>

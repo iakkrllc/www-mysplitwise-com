@@ -153,8 +153,13 @@ export function Header() {
             )}
             {resolvedTheme === "dark" ? "Light mode" : "Dark mode"}
           </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => resetData()}>
-            <RotateCcw className="mr-2 h-4 w-4" /> Reset sample data
+          <DropdownMenuItem
+            onClick={() => {
+              if (window.confirm("Clear all your data? This can't be undone."))
+                resetData();
+            }}
+          >
+            <RotateCcw className="mr-2 h-4 w-4" /> Clear all data
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem

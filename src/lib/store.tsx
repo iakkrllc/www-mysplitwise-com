@@ -8,7 +8,8 @@ import {
   useMemo,
   useState,
 } from "react";
-import { makeSampleState } from "./sample-data";
+import { makeBlankState } from "./sample-data";
+import { useAuth } from "./auth-store";
 import { round2, toBaseExpenses } from "./calculations";
 import type {
   AppState,
@@ -46,7 +47,7 @@ export function advanceDate(dateStr: string, freq: Frequency): string {
 /** Backfill fields for state saved by an older version. */
 function migrate(s: Partial<AppState> & Record<string, unknown>): AppState {
   return {
-    currentUserId: (s.currentUserId as string) ?? "u_alex",
+    currentUserId: (s.currentUserId as string) ?? "",
     baseCurrency: (s.baseCurrency as string) ?? "USD",
     users: (s.users as User[]) ?? [],
     groups: (s.groups as Group[]) ?? [],
@@ -161,7 +162,6 @@ interface StoreContextValue {
   addFromTemplate: (id: string) => void;
   deleteTemplate: (id: string) => void;
   setOnboarded: (v: boolean) => void;
-  startFresh: () => void;
   exportState: () => string;
   importState: (json: string) => boolean;
   resetData: () => void;
@@ -170,14 +170,34 @@ interface StoreContextValue {
 const StoreContext = createContext<StoreContextValue | null>(null);
 
 export function StoreProvider({ children }: { children: React.ReactNode }) {
-  const [state, setState] = useState<AppState>(() => makeSampleState());
+  const { user: authUser } = useAuth();
+  const authUserId = authUser?.id ?? "anonymous";
+  const authName =
+    (authUser?.user_metadata?.name as string | undefined) ||
+    authUser?.email ||
+    "You";
+  const authEmail = authUser?.email ?? "";
+  const storageKey = `${STORAGE_KEY}.${authUserId}`;
+
+  const blankState = useCallback(
+    () =>
+      makeBlankState({
+        id: authUserId,
+        name: authName,
+        email: authEmail,
+        avatarColor: pickAvatarColor(authEmail || authUserId),
+      }),
+    [authUserId, authName, authEmail],
+  );
+
+  const [state, setState] = useState<AppState>(() => blankState());
   const [view, setView] = useState<View>({ type: "dashboard" });
   const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
-    let initial = makeSampleState();
+    let initial = blankState();
     try {
-      const raw = localStorage.getItem(STORAGE_KEY);
+      const raw = localStorage.getItem(storageKey);
       if (raw) {
         const parsed = JSON.parse(raw);
         if (parsed?.users?.length) initial = migrate(parsed);
@@ -188,16 +208,18 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     initial = processRecurring(initial);
     setState(initial);
     setLoaded(true);
+    // Intentionally run once at mount for this authenticated user's session.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
     if (!loaded) return;
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      localStorage.setItem(storageKey, JSON.stringify(state));
     } catch {
       /* storage full / unavailable */
     }
-  }, [state, loaded]);
+  }, [state, loaded, storageKey]);
 
   const getUser = useCallback(
     (id: string) => state.users.find((u) => u.id === id),
@@ -488,23 +510,6 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     [],
   );
 
-  const startFresh: StoreContextValue["startFresh"] = useCallback(() => {
-    setState((s) => {
-      const me =
-        s.users.find((u) => u.id === s.currentUserId) ?? s.users[0];
-      return {
-        ...s,
-        users: me ? [me] : s.users,
-        groups: [],
-        expenses: [],
-        recurring: [],
-        templates: [],
-        onboarded: true,
-      };
-    });
-    setView({ type: "dashboard" });
-  }, []);
-
   const exportState: StoreContextValue["exportState"] = useCallback(
     () => JSON.stringify(state, null, 2),
     [state],
@@ -523,9 +528,9 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const resetData: StoreContextValue["resetData"] = useCallback(() => {
-    setState(makeSampleState());
+    setState({ ...blankState(), onboarded: true });
     setView({ type: "dashboard" });
-  }, []);
+  }, [blankState]);
 
   const value: StoreContextValue = {
     state,
@@ -557,7 +562,6 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     addFromTemplate,
     deleteTemplate,
     setOnboarded,
-    startFresh,
     exportState,
     importState,
     resetData,

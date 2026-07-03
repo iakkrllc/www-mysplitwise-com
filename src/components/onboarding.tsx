@@ -16,18 +16,11 @@ import { useStore } from "@/lib/store";
 import { CURRENCIES } from "@/lib/currency";
 import { MysplitwiseLogo } from "./mysplitwise-logo";
 import { cn } from "@/lib/utils";
-import { ArrowRight, Check, Sparkles, FilePlus2 } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 
 export function Onboarding() {
-  const {
-    loaded,
-    state,
-    currentUser,
-    updateProfile,
-    setBaseCurrency,
-    setOnboarded,
-    startFresh,
-  } = useStore();
+  const { loaded, state, currentUser, updateProfile, setBaseCurrency, setOnboarded } =
+    useStore();
 
   const open = loaded && !state.onboarded;
 
@@ -35,11 +28,10 @@ export function Onboarding() {
   const [name, setName] = useState(currentUser?.name ?? "");
   const [currency, setCurrency] = useState(state.baseCurrency ?? "USD");
 
-  const finish = (fresh: boolean) => {
+  const finish = () => {
     if (name.trim()) updateProfile({ name: name.trim() });
     setBaseCurrency(currency);
-    if (fresh) startFresh();
-    else setOnboarded(true);
+    setOnboarded(true);
   };
 
   return (
@@ -48,7 +40,7 @@ export function Onboarding() {
         <div className="flex items-center justify-between border-b border-border px-6 py-4">
           <MysplitwiseLogo size={24} />
           <div className="flex gap-1.5">
-            {[0, 1, 2].map((i) => (
+            {[0, 1].map((i) => (
               <span
                 key={i}
                 className={cn(
@@ -128,68 +120,10 @@ export function Onboarding() {
                 >
                   Back
                 </Button>
-                <Button
-                  variant="green"
-                  className="flex-1"
-                  onClick={() => setStep(2)}
-                >
-                  Continue <ArrowRight className="h-4 w-4" />
+                <Button variant="green" className="flex-1" onClick={finish}>
+                  Get started <ArrowRight className="h-4 w-4" />
                 </Button>
               </div>
-            </div>
-          )}
-
-          {step === 2 && (
-            <div className="space-y-4">
-              <div>
-                <h2 className="text-xl font-extrabold text-sw-charcoal">
-                  How do you want to start?
-                </h2>
-                <p className="mt-1 text-sm text-muted-foreground">
-                  You can change everything later.
-                </p>
-              </div>
-              <div className="grid gap-3">
-                <button
-                  type="button"
-                  onClick={() => finish(false)}
-                  className="flex items-start gap-3 rounded-xl border border-border p-4 text-left transition-all hover:border-primary/50 hover:bg-muted/40"
-                >
-                  <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-secondary text-primary">
-                    <Sparkles className="h-5 w-5" />
-                  </span>
-                  <div>
-                    <p className="font-bold text-sw-charcoal">
-                      Explore with sample data
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      Jump in with example friends, groups and expenses.
-                    </p>
-                  </div>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => finish(true)}
-                  className="flex items-start gap-3 rounded-xl border border-border p-4 text-left transition-all hover:border-primary/50 hover:bg-muted/40"
-                >
-                  <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-secondary text-primary">
-                    <FilePlus2 className="h-5 w-5" />
-                  </span>
-                  <div>
-                    <p className="font-bold text-sw-charcoal">Start fresh</p>
-                    <p className="text-xs text-muted-foreground">
-                      Begin with a clean slate — just you.
-                    </p>
-                  </div>
-                </button>
-              </div>
-              <button
-                type="button"
-                onClick={() => setStep(1)}
-                className="text-xs font-semibold text-muted-foreground hover:text-foreground"
-              >
-                ← Back
-              </button>
             </div>
           )}
         </div>
@@ -197,6 +131,3 @@ export function Onboarding() {
     </Dialog>
   );
 }
-
-// tiny unused import guard
-void Check;

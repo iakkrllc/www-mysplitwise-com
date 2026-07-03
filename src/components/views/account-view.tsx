@@ -202,11 +202,12 @@ export function AccountView() {
             variant="ghost"
             className="gap-2 text-muted-foreground"
             onClick={() => {
+              if (!window.confirm("Clear all your data? This can't be undone.")) return;
               resetData();
-              toast.success("Sample data restored");
+              toast.success("All data cleared");
             }}
           >
-            <RotateCcw className="h-4 w-4" /> Reset sample data
+            <RotateCcw className="h-4 w-4" /> Clear all data
           </Button>
         </div>
       </div>
