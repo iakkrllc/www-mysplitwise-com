@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Download, WifiOff, X } from "lucide-react";
-import { MySplitzMark } from "./mysplitz-logo";
+import { MysplitwiseMark } from "./mysplitwise-logo";
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
@@ -74,10 +74,10 @@ export function PWAStatus() {
       {showInstall && deferred && (
         <div className="fixed bottom-4 left-1/2 z-50 w-[calc(100%-2rem)] max-w-sm -translate-x-1/2 animate-fade-up">
           <div className="flex items-center gap-3 rounded-2xl border border-border bg-card p-3 shadow-xl">
-            <MySplitzMark size={36} />
+            <MysplitwiseMark size={36} />
             <div className="min-w-0 flex-1">
               <p className="text-sm font-bold text-sw-charcoal">
-                Install MYSplitz
+                Install mysplitwise
               </p>
               <p className="text-xs text-muted-foreground">
                 Add to your home screen for one-tap access &amp; offline use.

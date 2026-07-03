@@ -21,7 +21,7 @@ import type {
   User,
 } from "./types";
 
-const STORAGE_KEY = "mysplitz.state.v1";
+const STORAGE_KEY = "mysplitwise.state.v1";
 
 export function uid(prefix = "id_"): string {
   return (

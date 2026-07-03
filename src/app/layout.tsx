@@ -12,14 +12,14 @@ const mulish = Mulish({
 });
 
 export const metadata: Metadata = {
-  title: "MYSplitz — Split expenses with friends",
+  title: "mysplitwise — Split expenses with friends",
   description:
-    "MYSplitz makes it easy to split bills with friends and family. Track balances, organize group expenses, and settle up. Less stress when sharing expenses with anyone.",
+    "mysplitwise makes it easy to split bills with friends and family. Track balances, organize group expenses, and settle up. Less stress when sharing expenses with anyone.",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "MYSplitz",
+    title: "mysplitwise",
   },
   icons: {
     icon: [{ url: "/icon.svg", type: "image/svg+xml" }],

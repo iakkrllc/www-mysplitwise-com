@@ -1,6 +1,6 @@
 {
-  "name": "MYSplitz — Split expenses with friends",
-  "short_name": "MYSplitz",
+  "name": "mysplitwise — Split expenses with friends",
+  "short_name": "mysplitwise",
   "description": "Split bills with friends and family, track balances and settle up.",
   "start_url": "/app",
   "scope": "/",

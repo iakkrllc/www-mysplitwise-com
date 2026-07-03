@@ -39,7 +39,7 @@ export function AccountView() {
 
   const backup = () => {
     downloadFile(
-      `mysplitz-backup-${new Date().toISOString().slice(0, 10)}.json`,
+      `mysplitwise-backup-${new Date().toISOString().slice(0, 10)}.json`,
       exportState(),
       "application/json",
     );

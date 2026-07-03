@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { MySplitzLogo, MySplitzMark } from "@/components/mysplitz-logo";
+import { MysplitwiseLogo, MysplitwiseMark } from "@/components/mysplitwise-logo";
 import { ThemeToggle } from "@/components/theme-toggle";
 import {
   Wallet,
@@ -82,7 +82,7 @@ export function LandingPage() {
       {/* Nav */}
       <header className="sticky top-0 z-40 border-b border-border/70 bg-card/85 backdrop-blur">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6">
-          <MySplitzLogo size={28} />
+          <MysplitwiseLogo size={28} />
           <nav className="hidden items-center gap-8 text-sm font-semibold text-sw-charcoal md:flex">
             <a href="#features" className="hover:text-primary">
               Features
@@ -138,7 +138,7 @@ export function LandingPage() {
               <span className="text-primary">awkward math.</span>
             </h1>
             <p className="mt-5 max-w-md text-lg text-muted-foreground">
-              MYSplitz keeps track of shared costs with friends, roommates,
+              mysplitwise keeps track of shared costs with friends, roommates,
               trips and groups — so everyone knows who owes who, and settling up
               is effortless.
             </p>
@@ -193,7 +193,7 @@ export function LandingPage() {
             Everything you need to split fairly
           </h2>
           <p className="mt-3 text-muted-foreground">
-            From a quick dinner to a months-long lease — MYSplitz handles it.
+            From a quick dinner to a months-long lease — mysplitwise handles it.
           </p>
         </div>
         <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
@@ -252,7 +252,7 @@ export function LandingPage() {
           {[
             {
               q: "Is it really free?",
-              a: "Yes. MYSplitz runs entirely in your browser and stores data on your device — no account, no fees.",
+              a: "Yes. mysplitwise is free to use — create an account and start splitting expenses with friends.",
             },
             {
               q: "Can I split a bill unequally?",
@@ -310,7 +310,7 @@ export function LandingPage() {
       <footer className="border-t border-border bg-card">
         <div className="mx-auto grid max-w-6xl gap-8 px-4 py-12 sm:px-6 md:grid-cols-[1.5fr_1fr_1fr_1fr]">
           <div>
-            <MySplitzLogo size={26} />
+            <MysplitwiseLogo size={26} />
             <p className="mt-3 max-w-xs text-sm text-muted-foreground">
               The easiest way to share expenses with friends and family and stop
               stressing about “who owes who.”
@@ -342,9 +342,9 @@ export function LandingPage() {
         </div>
         <div className="border-t border-border">
           <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-2 px-4 py-5 text-xs text-muted-foreground sm:flex-row sm:px-6">
-            <span>© 2026 MYSplitz. All rights reserved.</span>
+            <span>© 2026 mysplitwise. All rights reserved.</span>
             <span className="flex items-center gap-1.5">
-              <MySplitzMark size={16} /> Built with care
+              <MysplitwiseMark size={16} /> Built with care
             </span>
           </div>
         </div>
@@ -383,7 +383,7 @@ function HeroMock() {
     <div className="relative">
       <div className="rounded-3xl border border-border bg-card p-5 shadow-2xl">
         <div className="flex items-center justify-between">
-          <MySplitzLogo size={22} />
+          <MysplitwiseLogo size={22} />
           <span className="rounded-full bg-secondary px-2.5 py-1 text-[10px] font-bold uppercase text-primary">
             Dashboard
           </span>

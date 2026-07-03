@@ -1,6 +1,6 @@
 import { cn } from "@/lib/utils";
 
-export function MySplitzMark({
+export function MysplitwiseMark({
   className,
   size = 28,
 }: {
@@ -46,7 +46,7 @@ export function MySplitzMark({
   );
 }
 
-export function MySplitzLogo({
+export function MysplitwiseLogo({
   className,
   size = 28,
   wordmark = true,
@@ -57,13 +57,13 @@ export function MySplitzLogo({
 }) {
   return (
     <div className={cn("flex items-center gap-2", className)}>
-      <MySplitzMark size={size} />
+      <MysplitwiseMark size={size} />
       {wordmark && (
         <span
           className="font-extrabold tracking-tight text-sw-charcoal"
           style={{ fontSize: size * 0.82 }}
         >
-          MYSplitz
+          mysplitwise
         </span>
       )}
     </div>
