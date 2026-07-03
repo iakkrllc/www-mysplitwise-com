@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { StoreProvider } from "@/lib/store";
 import { UIProvider } from "@/lib/ui-store";
 import { AppShell } from "@/components/app-shell";
+import { AuthGate } from "@/components/auth-gate";
 
 export const metadata: Metadata = {
   title: "Dashboard · mysplitwise",
@@ -10,10 +11,12 @@ export const metadata: Metadata = {
 
 export default function AppPage() {
   return (
-    <StoreProvider>
-      <UIProvider>
-        <AppShell />
-      </UIProvider>
-    </StoreProvider>
+    <AuthGate>
+      <StoreProvider>
+        <UIProvider>
+          <AppShell />
+        </UIProvider>
+      </StoreProvider>
+    </AuthGate>
   );
 }

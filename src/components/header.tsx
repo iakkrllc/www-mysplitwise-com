@@ -21,6 +21,7 @@ import { MysplitwiseLogo, MysplitwiseMark } from "./mysplitwise-logo";
 import { Button } from "./ui/button";
 import { useStore } from "@/lib/store";
 import { useUI } from "@/lib/ui-store";
+import { useAuth } from "@/lib/auth-store";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -36,6 +37,7 @@ import { NotificationsBell } from "./notifications-bell";
 export function Header() {
   const { currentUser, setView, resetData } = useStore();
   const { openModal, setCommandOpen } = useUI();
+  const { signOut } = useAuth();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const router = useRouter();
   const { resolvedTheme, setTheme } = useTheme();
@@ -155,7 +157,12 @@ export function Header() {
             <RotateCcw className="mr-2 h-4 w-4" /> Reset sample data
           </DropdownMenuItem>
           <DropdownMenuSeparator />
-          <DropdownMenuItem onClick={() => router.push("/")}>
+          <DropdownMenuItem
+            onClick={async () => {
+              await signOut();
+              router.push("/");
+            }}
+          >
             <LogOut className="mr-2 h-4 w-4" /> Sign out
           </DropdownMenuItem>
         </DropdownMenuContent>

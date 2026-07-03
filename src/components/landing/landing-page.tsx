@@ -97,13 +97,13 @@ export function LandingPage() {
           <div className="flex items-center gap-2">
             <ThemeToggle />
             <Link
-              href="/app"
+              href="/login"
               className="hidden rounded-lg px-4 py-2 text-sm font-bold text-sw-charcoal hover:bg-muted sm:inline-flex"
             >
               Log in
             </Link>
             <Link
-              href="/app"
+              href="/signup"
               className="inline-flex items-center gap-1.5 rounded-lg bg-[hsl(var(--sw-green-strong))] px-4 py-2 text-sm font-bold text-white shadow-sm transition-all hover:brightness-105"
             >
               Sign up
@@ -143,7 +143,7 @@ export function LandingPage() {
               is effortless.
             </p>
             <div className="mt-8 flex flex-wrap items-center gap-3">
-              <Link href="/app" className={btnGreen}>
+              <Link href="/signup" className={btnGreen}>
                 Get started — it&apos;s free <ArrowRight className="h-4 w-4" />
               </Link>
               <a href="#features" className={btnGhost}>
@@ -152,7 +152,7 @@ export function LandingPage() {
             </div>
             <div className="mt-6 flex items-center gap-5 text-sm text-muted-foreground">
               <span className="flex items-center gap-1.5">
-                <Check className="h-4 w-4 text-primary" /> No sign-up needed
+                <Check className="h-4 w-4 text-primary" /> Free forever
               </span>
               <span className="flex items-center gap-1.5">
                 <Check className="h-4 w-4 text-primary" /> Works offline
@@ -297,7 +297,7 @@ export function LandingPage() {
               Join in seconds and never chase a friend for money again.
             </p>
             <Link
-              href="/app"
+              href="/signup"
               className="mt-7 inline-flex items-center gap-2 rounded-lg bg-white px-6 py-3.5 text-[15px] font-extrabold text-[hsl(var(--sw-green-dark))] shadow-lg transition-transform hover:scale-[1.03]"
             >
               Get started — it&apos;s free <ArrowRight className="h-4 w-4" />

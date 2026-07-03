@@ -4,6 +4,7 @@ import "./globals.css";
 import ClientBody from "./ClientBody";
 import Script from "next/script";
 import { ThemeProvider } from "@/components/theme-provider";
+import { AuthProvider } from "@/lib/auth-store";
 
 const mulish = Mulish({
   variable: "--font-mulish",
@@ -58,7 +59,9 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <ClientBody>{children}</ClientBody>
+          <AuthProvider>
+            <ClientBody>{children}</ClientBody>
+          </AuthProvider>
         </ThemeProvider>
       </body>
     </html>
