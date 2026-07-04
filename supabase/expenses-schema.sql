@@ -214,3 +214,13 @@ begin
   delete from profiles where id = v_placeholder_id;
 end;
 $$ language plpgsql security definer;
+
+-- Feature: settlement dispute audit trail. mysplitwise can't verify real
+-- money moved during a Settle Up (it only deep-links to Venmo/PayPal/Cash
+-- App, never processes payment itself) — this lets the other party flag a
+-- settlement they say never happened, for visibility only. Run once.
+alter table expenses
+  add column disputed boolean not null default false,
+  add column dispute_reason text,
+  add column disputed_by uuid references profiles(id),
+  add column disputed_at timestamptz;

@@ -25,10 +25,39 @@ export async function GET(req: NextRequest) {
       (usersPage?.users ?? []).map((u) => [u.id, u.email ?? u.phone ?? u.id]),
     );
 
-    const activity = (data ?? []).map((row) => ({
-      ...row,
-      user_label: row.user_id ? emailById.get(row.user_id) ?? row.user_id : null,
-    }));
+    // Flag possible brute-force attempts: 5+ failed logins from the same IP
+    // within any 10-minute window in this fetched batch.
+    const BRUTE_FORCE_COUNT = 5;
+    const BRUTE_FORCE_WINDOW_MS = 10 * 60 * 1000;
+    const failedByIp = new Map<string, number[]>();
+    for (const row of data ?? []) {
+      if (row.event_type !== "login_failed") continue;
+      const ip = (row.metadata as { ip?: string } | null)?.ip;
+      if (!ip) continue;
+      const ts = new Date(row.created_at).getTime();
+      const list = failedByIp.get(ip) ?? [];
+      list.push(ts);
+      failedByIp.set(ip, list);
+    }
+    const bruteForceIps = new Set<string>();
+    for (const [ip, timestamps] of failedByIp) {
+      const sorted = [...timestamps].sort((a, b) => a - b);
+      for (let i = 0; i + BRUTE_FORCE_COUNT - 1 < sorted.length; i++) {
+        if (sorted[i + BRUTE_FORCE_COUNT - 1] - sorted[i] <= BRUTE_FORCE_WINDOW_MS) {
+          bruteForceIps.add(ip);
+          break;
+        }
+      }
+    }
+
+    const activity = (data ?? []).map((row) => {
+      const ip = (row.metadata as { ip?: string } | null)?.ip;
+      return {
+        ...row,
+        user_label: row.user_id ? emailById.get(row.user_id) ?? row.user_id : null,
+        possibleBruteForce: !!ip && bruteForceIps.has(ip),
+      };
+    });
 
     return NextResponse.json({ activity });
   } catch (err) {

@@ -84,6 +84,10 @@ export interface ExpenseRow {
   tax: string | number | null;
   tip: string | number | null;
   payment_method: string | null;
+  disputed: boolean;
+  dispute_reason: string | null;
+  disputed_by: string | null;
+  disputed_at: string | null;
 }
 
 export function rowToExpense(
@@ -129,6 +133,10 @@ export function rowToExpense(
     tax: row.tax != null ? Number(row.tax) : undefined,
     tip: row.tip != null ? Number(row.tip) : undefined,
     paymentMethod: (row.payment_method as Expense["paymentMethod"]) ?? undefined,
+    disputed: row.disputed,
+    disputeReason: row.dispute_reason ?? undefined,
+    disputedBy: row.disputed_by ?? undefined,
+    disputedAt: row.disputed_at ?? undefined,
   };
 }
 

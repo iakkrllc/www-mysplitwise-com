@@ -49,6 +49,17 @@ function claimInvitesEvent(accessToken: string | undefined) {
   }).catch(() => {});
 }
 
+// A failed login has no session/token — logged without auth, purely for the
+// security activity log's visibility. Never blocks or slows down the actual
+// sign-in attempt.
+function logFailedLoginEvent(email: string) {
+  fetch("/api/log-activity", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ eventType: "login_failed", attemptedEmail: email }),
+  }).catch(() => {});
+}
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
@@ -89,6 +100,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (!error) {
       logEvent(data.session?.access_token, "login");
       claimInvitesEvent(data.session?.access_token);
+    } else {
+      logFailedLoginEvent(email);
     }
     return { error: error?.message ?? null };
   };

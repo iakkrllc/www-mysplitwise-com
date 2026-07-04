@@ -27,6 +27,8 @@ import {
   SendHorizontal,
   Banknote,
   CreditCard,
+  Flag,
+  AlertTriangle,
 } from "lucide-react";
 import { toast } from "sonner";
 import type { PaymentMethod } from "@/lib/types";
@@ -49,7 +51,7 @@ function shortTime(iso: string): string {
 
 export function ExpenseDetailDialog() {
   const { modal, closeModal, openModal } = useUI();
-  const { state, currentUser, getUser, getGroup, deleteExpense, addComment } =
+  const { state, currentUser, getUser, getGroup, deleteExpense, addComment, updateExpense } =
     useStore();
   const [comment, setComment] = useState("");
 
@@ -110,6 +112,16 @@ export function ExpenseDetailDialog() {
               <div className="mb-2 flex items-center gap-2 rounded-lg bg-secondary px-3 py-2 text-xs font-semibold text-primary">
                 <Repeat className="h-3.5 w-3.5" />
                 Auto-added from a {recurring.frequency} recurring expense
+              </div>
+            )}
+
+            {expense.disputed && (
+              <div className="mb-2 flex items-start gap-2 rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2 text-xs text-destructive">
+                <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+                <span>
+                  <b>{nameOf(expense.disputedBy ?? "")}</b> disputed this payment
+                  {expense.disputeReason ? `: "${expense.disputeReason}"` : "."}
+                </span>
               </div>
             )}
 
@@ -348,6 +360,34 @@ export function ExpenseDetailDialog() {
                 >
                   <Pencil className="mr-1.5 h-4 w-4" /> Edit
                 </Button>
+              )}
+              {expense.isSettlement && currentUser.id !== expense.createdBy && (
+                expense.disputed ? (
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      updateExpense(expense.id, { disputed: false });
+                      toast.success("Dispute withdrawn");
+                    }}
+                  >
+                    <Flag className="mr-1.5 h-4 w-4" /> Withdraw dispute
+                  </Button>
+                ) : (
+                  <Button
+                    variant="outline"
+                    className="text-destructive hover:bg-destructive/10 hover:text-destructive"
+                    onClick={() => {
+                      const reason = window.prompt(
+                        "Why are you disputing this payment? (optional)",
+                      );
+                      if (reason === null) return;
+                      updateExpense(expense.id, { disputed: true, disputeReason: reason || undefined });
+                      toast.success("Payment marked as disputed");
+                    }}
+                  >
+                    <Flag className="mr-1.5 h-4 w-4" /> Dispute this payment
+                  </Button>
+                )
               )}
             </DialogFooter>
           </>

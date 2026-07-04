@@ -62,6 +62,11 @@ export function ExpenseRow({ e }: { e: Expense }) {
           <span className="font-semibold">{toName}</span>{" "}
           <span className="font-bold">{formatMoney(e.amount, e.currency)}</span>
         </p>
+        {e.disputed && (
+          <span className="rounded-full bg-destructive/15 px-2.5 py-1 text-[11px] font-bold text-destructive">
+            disputed
+          </span>
+        )}
         <span className="rounded-full bg-secondary px-2.5 py-1 text-[11px] font-bold text-primary">
           payment
         </span>

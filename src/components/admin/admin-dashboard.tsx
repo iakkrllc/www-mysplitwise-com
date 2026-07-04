@@ -366,12 +366,24 @@ function UsersSection() {
   );
 }
 
+interface ActivityMetadata {
+  ip?: string | null;
+  country?: string | null;
+  city?: string | null;
+  device?: string;
+  browser?: string;
+  os?: string;
+  attemptedEmail?: string | null;
+}
+
 interface ActivityRow {
   id: number;
   user_label: string | null;
   event_type: string;
   description: string | null;
   created_at: string;
+  metadata: ActivityMetadata | null;
+  possibleBruteForce?: boolean;
 }
 
 function ActivitySection() {
@@ -384,41 +396,116 @@ function ActivitySection() {
   }, []);
 
   return (
-    <Card title="Activity log" subtitle="Signups, logins, sign-outs, and admin actions.">
+    <Card
+      title="Activity log"
+      subtitle="Signups, logins, sign-outs, failed sign-in attempts, and admin actions — with IP, device, and location for security review."
+    >
       {activity === null ? (
         <p className="text-sm text-muted-foreground">Loading…</p>
       ) : activity.length === 0 ? (
         <p className="text-sm text-muted-foreground">No activity yet.</p>
       ) : (
         <div className="max-h-96 space-y-1 overflow-y-auto">
-          {activity.map((a) => (
-            <div key={a.id} className="flex items-center justify-between gap-3 border-b border-border/60 py-1.5 text-sm">
-              <div className="min-w-0">
-                <span className="font-semibold uppercase text-xs text-primary">{a.event_type}</span>{" "}
-                <span className="text-sw-charcoal">{a.description}</span>
-                {a.user_label && (
-                  <span className="text-muted-foreground"> · {a.user_label}</span>
-                )}
+          {activity.map((a) => {
+            const m = a.metadata;
+            const locationParts = [m?.city, m?.country].filter(Boolean);
+            const deviceParts = [m?.browser, m?.os, m?.device].filter(Boolean);
+            const label =
+              a.event_type === "login_failed" ? m?.attemptedEmail ?? "unknown email" : a.user_label;
+            return (
+              <div
+                key={a.id}
+                className={`flex items-center justify-between gap-3 border-b border-l-2 py-1.5 pl-2 text-sm ${
+                  a.possibleBruteForce
+                    ? "border-b-border/60 border-l-destructive bg-destructive/5"
+                    : "border-b-border/60 border-l-transparent"
+                }`}
+              >
+                <div className="min-w-0">
+                  <span className="font-semibold uppercase text-xs text-primary">{a.event_type}</span>{" "}
+                  <span className="text-sw-charcoal">{a.description}</span>
+                  {label && <span className="text-muted-foreground"> · {label}</span>}
+                  {a.possibleBruteForce && (
+                    <span className="ml-1.5 rounded-full bg-destructive/15 px-1.5 py-0.5 text-[10px] font-bold uppercase text-destructive">
+                      Possible brute-force
+                    </span>
+                  )}
+                  {(m?.ip || locationParts.length > 0 || deviceParts.length > 0) && (
+                    <div className="text-xs text-muted-foreground">
+                      {[m?.ip, locationParts.join(", "), deviceParts.join(" · ")]
+                        .filter(Boolean)
+                        .join(" · ")}
+                    </div>
+                  )}
+                </div>
+                <span className="shrink-0 text-xs text-muted-foreground">
+                  {new Date(a.created_at).toLocaleString()}
+                </span>
               </div>
-              <span className="shrink-0 text-xs text-muted-foreground">
-                {new Date(a.created_at).toLocaleString()}
-              </span>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </Card>
   );
 }
 
+interface DisputedSettlement {
+  id: string;
+  amount: number;
+  currency: string;
+  reason: string | null;
+  disputedAt: string | null;
+  loggedBy: string;
+  disputedBy: string | null;
+}
+
 function PaymentInfoSection() {
+  const [disputes, setDisputes] = useState<DisputedSettlement[] | null>(null);
+
+  useEffect(() => {
+    callAdminApi("/api/admin/disputed-settlements")
+      .then((json) => setDisputes(json.disputes))
+      .catch((err) => toast.error(err.message));
+  }, []);
+
   return (
-    <Card title="Payment info" subtitle="Finance access">
+    <Card
+      title="Payment info"
+      subtitle="Finance access — disputed settlements needing awareness, not automated action."
+    >
       <p className="text-sm text-muted-foreground">
-        There's no centrally-stored payment data yet — users' Venmo/PayPal/Cash App
-        handles live in each person's own browser, not in a shared database. This
-        section will populate once account data is moved to central storage.
+        Venmo/PayPal/Cash App handles aren't centrally stored — mysplitwise never
+        processes payment itself, so it can't verify money actually moved during a
+        Settle Up. This is a read-only view of settlements the other party has
+        flagged as disputed, for visibility only.
       </p>
+      <div className="mt-3">
+        {disputes === null ? (
+          <p className="text-sm text-muted-foreground">Loading…</p>
+        ) : disputes.length === 0 ? (
+          <p className="text-sm text-muted-foreground">No disputed settlements.</p>
+        ) : (
+          <div className="max-h-72 space-y-1 overflow-y-auto">
+            {disputes.map((d) => (
+              <div key={d.id} className="border-b border-border/60 py-1.5 text-sm">
+                <div className="flex items-center justify-between gap-3">
+                  <span className="font-semibold text-sw-charcoal">
+                    {d.currency} {d.amount}
+                  </span>
+                  <span className="shrink-0 text-xs text-muted-foreground">
+                    {d.disputedAt ? new Date(d.disputedAt).toLocaleString() : ""}
+                  </span>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Logged by {d.loggedBy}, disputed by {d.disputedBy ?? "unknown"}
+                  {d.reason && <> — &ldquo;{d.reason}&rdquo;</>}
+                </p>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
     </Card>
   );
 }

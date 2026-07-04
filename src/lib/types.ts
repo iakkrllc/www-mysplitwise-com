@@ -64,6 +64,11 @@ export interface Expense {
   tax?: number;
   tip?: number;
   paymentMethod?: PaymentMethod;
+  /** Settlement dispute audit trail — visibility only, not fraud prevention. */
+  disputed?: boolean;
+  disputeReason?: string;
+  disputedBy?: string;
+  disputedAt?: string;
 }
 
 export type PaymentMethod =

@@ -16,6 +16,7 @@ import {
   Scale,
   Check,
   Sparkles,
+  AlertTriangle,
   type LucideIcon,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -123,6 +124,25 @@ export function NotificationsBell() {
                 {formatMoney(e.amount, e.currency)}
               </>
             ),
+            action: {
+              label: "View",
+              run: () => openModal({ kind: "expenseDetail", id: e.id }),
+            },
+          });
+        }
+        if (e.disputed && e.createdBy === currentUser.id) {
+          timed.push({
+            id: `dispute-${e.id}`,
+            icon: AlertTriangle,
+            iconColor: "#E63879",
+            at: e.disputedAt ?? e.createdAt,
+            title: (
+              <>
+                <b>{nameOf(e.disputedBy ?? "")}</b> disputed the{" "}
+                {formatMoney(e.amount, e.currency)} payment you logged
+              </>
+            ),
+            sub: e.disputeReason,
             action: {
               label: "View",
               run: () => openModal({ kind: "expenseDetail", id: e.id }),

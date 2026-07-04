@@ -9,13 +9,19 @@ async function assertCanTouchExpense(
   admin: ReturnType<typeof getSupabaseAdmin>,
   expenseId: string,
   callerId: string,
-): Promise<{ groupId: string | null } | null> {
+): Promise<{ groupId: string | null; createdBy: string; isSettlement: boolean } | null> {
   const { data: expenseRow } = await admin
     .from("expenses")
-    .select("id, group_id, created_by")
+    .select("id, group_id, created_by, is_settlement")
     .eq("id", expenseId)
     .maybeSingle();
   if (!expenseRow) return null;
+
+  const access = {
+    groupId: expenseRow.group_id,
+    createdBy: expenseRow.created_by,
+    isSettlement: expenseRow.is_settlement,
+  };
 
   const { data: myShare } = await admin
     .from("expense_shares")
@@ -23,7 +29,7 @@ async function assertCanTouchExpense(
     .eq("expense_id", expenseId)
     .eq("user_id", callerId)
     .maybeSingle();
-  if (myShare || expenseRow.created_by === callerId) return { groupId: expenseRow.group_id };
+  if (myShare || expenseRow.created_by === callerId) return access;
 
   if (expenseRow.group_id) {
     const { data: membership } = await admin
@@ -32,7 +38,7 @@ async function assertCanTouchExpense(
       .eq("group_id", expenseRow.group_id)
       .eq("user_id", callerId)
       .maybeSingle();
-    if (membership) return { groupId: expenseRow.group_id };
+    if (membership) return access;
   }
   return null;
 }
@@ -63,6 +69,26 @@ export async function PATCH(
     if (body.tax !== undefined) patch.tax = body.tax;
     if (body.tip !== undefined) patch.tip = body.tip;
     if (body.paymentMethod !== undefined) patch.payment_method = body.paymentMethod;
+
+    if (typeof body.disputed === "boolean") {
+      if (body.disputed) {
+        if (!access.isSettlement) {
+          return NextResponse.json({ error: "Only payments can be disputed" }, { status: 400 });
+        }
+        if (access.createdBy === user.id) {
+          return NextResponse.json({ error: "You can't dispute your own payment" }, { status: 403 });
+        }
+        patch.disputed = true;
+        patch.dispute_reason = typeof body.disputeReason === "string" ? body.disputeReason : null;
+        patch.disputed_by = user.id;
+        patch.disputed_at = new Date().toISOString();
+      } else {
+        patch.disputed = false;
+        patch.dispute_reason = null;
+        patch.disputed_by = null;
+        patch.disputed_at = null;
+      }
+    }
 
     const effectiveGroupId: string | null =
       body.groupId !== undefined ? body.groupId : access.groupId;
