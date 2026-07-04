@@ -325,6 +325,15 @@ export function ExpenseDetailDialog() {
                 variant="ghost"
                 className="text-destructive hover:bg-destructive/10 hover:text-destructive"
                 onClick={() => {
+                  const others = expense.shares
+                    .filter((s) => s.userId !== currentUser.id)
+                    .map((s) => getUser(s.userId)?.name)
+                    .filter((n): n is string => !!n);
+                  const message =
+                    others.length > 0
+                      ? `Delete this expense? It's shared with ${others.join(", ")} — it'll be removed from their account too, and this can't be undone.`
+                      : "Delete this expense? This can't be undone.";
+                  if (!window.confirm(message)) return;
                   deleteExpense(expense.id);
                   toast.success("Expense deleted");
                   closeModal();

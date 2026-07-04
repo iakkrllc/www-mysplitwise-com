@@ -142,6 +142,15 @@ export function GroupView({ groupId }: { groupId: string }) {
               <DropdownMenuItem
                 className="text-destructive focus:text-destructive"
                 onClick={() => {
+                  const others = group.memberIds
+                    .filter((id) => id !== currentUser.id)
+                    .map((id) => getUser(id)?.name)
+                    .filter((n): n is string => !!n);
+                  const message =
+                    others.length > 0
+                      ? `Delete "${group.name}"? It's shared with ${others.join(", ")} — this removes it and its expense history for everyone in the group, and can't be undone.`
+                      : `Delete "${group.name}"? This can't be undone.`;
+                  if (!window.confirm(message)) return;
                   deleteGroup(group.id);
                   setView({ type: "dashboard" });
                 }}

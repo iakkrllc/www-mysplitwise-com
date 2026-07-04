@@ -289,8 +289,9 @@ export function AccountView() {
       <div className="mt-6 rounded-2xl border border-border bg-muted/30 p-5">
         <h2 className="font-bold text-sw-charcoal">Data &amp; backup</h2>
         <p className="mt-1 text-sm text-muted-foreground">
-          Your data is stored locally in this browser only. Download a backup to
-          keep it safe or move it to another device.
+          Your expenses, friends, and groups are saved online and shared with
+          the people you split bills with. Download a backup any time as an
+          extra copy, or resync if something looks out of date.
         </p>
         <input
           ref={fileRef}
@@ -314,14 +315,17 @@ export function AccountView() {
             variant="ghost"
             className="gap-2 text-muted-foreground"
             onClick={() => {
-              if (!window.confirm("Clear all your data? This can't be undone.")) return;
               resetData();
-              toast.success("All data cleared");
+              toast.success("Resynced with the server");
             }}
           >
-            <RotateCcw className="h-4 w-4" /> Clear all data
+            <RotateCcw className="h-4 w-4" /> Resync data
           </Button>
         </div>
+        <p className="mt-2 text-xs text-muted-foreground">
+          Resync only refreshes what&apos;s shown on this device — it doesn&apos;t delete
+          anything from the shared history you and your friends can see.
+        </p>
       </div>
 
       <div className="mt-6 rounded-2xl border border-destructive/30 bg-destructive/5 p-5">
