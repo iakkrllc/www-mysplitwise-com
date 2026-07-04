@@ -36,6 +36,19 @@ function logEvent(accessToken: string | undefined, eventType: "login" | "signup"
   }).catch(() => {});
 }
 
+// Ensures the caller has a profile row and re-attributes any placeholder
+// profile (a friend added them by email before they'd joined) onto their
+// real account. Fire-and-forget, same as logEvent above, and — like that
+// call — deliberately done from application code after a successful auth
+// response rather than a DB trigger on auth.users/auth.sessions.
+function claimInvitesEvent(accessToken: string | undefined) {
+  if (!accessToken) return;
+  fetch("/api/sync/claim-invites", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${accessToken}` },
+  }).catch(() => {});
+}
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
@@ -61,7 +74,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       password,
       options: { data: { name } },
     });
-    if (!error) logEvent(data.session?.access_token, "signup");
+    if (!error) {
+      logEvent(data.session?.access_token, "signup");
+      claimInvitesEvent(data.session?.access_token);
+    }
     return { error: error?.message ?? null };
   };
 
@@ -70,7 +86,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       email,
       password,
     });
-    if (!error) logEvent(data.session?.access_token, "login");
+    if (!error) {
+      logEvent(data.session?.access_token, "login");
+      claimInvitesEvent(data.session?.access_token);
+    }
     return { error: error?.message ?? null };
   };
 
@@ -97,6 +116,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (!error) {
       const isNewAccount = data.user && Date.now() - new Date(data.user.created_at).getTime() < 60_000;
       logEvent(data.session?.access_token, isNewAccount ? "signup" : "login");
+      claimInvitesEvent(data.session?.access_token);
     }
     return { error: error?.message ?? null };
   };

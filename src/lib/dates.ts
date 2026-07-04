@@ -15,3 +15,15 @@ export function todayISO(): string {
 export function parseLocalDate(dateStr: string): Date {
   return new Date(`${dateStr}T00:00:00`);
 }
+
+/** Advance a "YYYY-MM-DD" date by one period of a recurring frequency. */
+export function advanceDate(
+  dateStr: string,
+  freq: "weekly" | "monthly" | "yearly",
+): string {
+  const d = parseLocalDate(dateStr);
+  if (freq === "weekly") d.setDate(d.getDate() + 7);
+  else if (freq === "monthly") d.setMonth(d.getMonth() + 1);
+  else d.setFullYear(d.getFullYear() + 1);
+  return toISODateLocal(d);
+}

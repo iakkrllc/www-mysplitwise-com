@@ -7,6 +7,8 @@ export interface User {
   venmo?: string;
   paypal?: string;
   cashapp?: string;
+  /** True if this person hasn't joined mysplitwise yet — invited by email, not yet connectable. */
+  pending?: boolean;
 }
 
 export type GroupType = "trip" | "home" | "couple" | "other";

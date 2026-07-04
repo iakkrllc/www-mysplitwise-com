@@ -8,21 +8,47 @@ import {
   useMemo,
   useState,
 } from "react";
+import { toast } from "sonner";
 import { makeBlankState } from "./sample-data";
 import { useAuth } from "./auth-store";
 import { round2, toBaseExpenses } from "./calculations";
-import { toISODateLocal, todayISO, parseLocalDate } from "./dates";
+import { todayISO, advanceDate } from "./dates";
+import {
+  pullState,
+  migrateLocalState,
+  addFriendApi,
+  removeFriendApi,
+  updateProfileApi,
+  createGroupApi,
+  updateGroupApi,
+  deleteGroupApi,
+  createExpenseApi,
+  updateExpenseApi,
+  deleteExpenseApi,
+  addCommentApi,
+  createRecurringApi,
+  updateRecurringApi,
+  deleteRecurringApi,
+  logRecurringNowApi,
+  addSettlementsApi,
+  type PullResponse,
+} from "./sync-api";
 import type {
   AppState,
   Expense,
   ExpenseTemplate,
-  Frequency,
   Group,
   GroupType,
   RecurringExpense,
   User,
 } from "./types";
 
+// mysplitwise stores expenses/friends/groups on the server (Supabase) —
+// that's the source of truth so two people can actually share a bill.
+// localStorage below is kept only as a fast local cache: it seeds the UI
+// instantly on load and gives some resilience if the network is briefly
+// down, but every load pulls fresh data from the server and every mutation
+// writes there too.
 const STORAGE_KEY = "mysplitwise.state.v1";
 
 export function uid(prefix = "id_"): string {
@@ -33,13 +59,7 @@ export function uid(prefix = "id_"): string {
   );
 }
 
-export function advanceDate(dateStr: string, freq: Frequency): string {
-  const d = parseLocalDate(dateStr);
-  if (freq === "weekly") d.setDate(d.getDate() + 7);
-  else if (freq === "monthly") d.setMonth(d.getMonth() + 1);
-  else d.setFullYear(d.getFullYear() + 1);
-  return toISODateLocal(d);
-}
+export { advanceDate } from "./dates";
 
 /** Backfill fields for state saved by an older version. */
 function migrate(s: Partial<AppState> & Record<string, unknown>): AppState {
@@ -59,7 +79,7 @@ function migrate(s: Partial<AppState> & Record<string, unknown>): AppState {
   };
 }
 
-/** Generate any recurring expenses that are due on or before today. */
+/** Generate any recurring expenses that are due on or before today (cosmetic local pre-render only — the server does this authoritatively on pull). */
 function processRecurring(state: AppState): AppState {
   const today = todayISO();
   const generated: Expense[] = [];
@@ -134,7 +154,7 @@ interface StoreContextValue {
   addExpense: (e: Omit<Expense, "id" | "createdAt">) => string;
   updateExpense: (id: string, patch: Partial<Expense>) => void;
   deleteExpense: (id: string) => void;
-  addFriend: (name: string, email: string) => string;
+  addFriend: (name: string, email: string) => Promise<{ id: string; status: "connected" | "invited" }>;
   removeFriend: (id: string) => void;
   addGroup: (name: string, type: GroupType, memberIds: string[]) => string;
   updateGroup: (id: string, patch: Partial<Group>) => void;
@@ -194,20 +214,78 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   const [view, setView] = useState<View>({ type: "dashboard" });
   const [loaded, setLoaded] = useState(false);
 
+  const applyPulled = useCallback((pulled: PullResponse) => {
+    setState((s) => ({
+      ...s,
+      baseCurrency: pulled.baseCurrency,
+      onboarded: pulled.onboarded,
+      notificationsReadAt: pulled.notificationsReadAt,
+      users: pulled.users,
+      groups: pulled.groups,
+      expenses: pulled.expenses,
+      recurring: pulled.recurring,
+    }));
+  }, []);
+
   useEffect(() => {
+    let cancelled = false;
     let initial = blankState();
+    let localHadData = false;
     try {
       const raw = localStorage.getItem(storageKey);
       if (raw) {
         const parsed = JSON.parse(raw);
-        if (parsed?.users?.length) initial = migrate(parsed);
+        if (parsed?.users?.length) {
+          initial = migrate(parsed);
+          localHadData =
+            parsed.users.length > 1 ||
+            (parsed.expenses?.length ?? 0) > 0 ||
+            (parsed.groups?.length ?? 0) > 0;
+        }
       }
     } catch {
       /* ignore corrupt storage */
     }
     initial = processRecurring(initial);
     setState(initial);
-    setLoaded(true);
+    setLoaded(true); // show cached/blank UI immediately while we sync with the server
+
+    (async () => {
+      try {
+        let pulled = await pullState();
+        const looksEmpty =
+          pulled.users.length <= 1 && pulled.expenses.length === 0 && pulled.groups.length === 0;
+        if (looksEmpty && localHadData) {
+          try {
+            const result = await migrateLocalState(initial);
+            if (result.connected > 0) {
+              toast.success(
+                `Welcome back — ${result.connected} of your friend${result.connected === 1 ? "" : "s"} ${
+                  result.connected === 1 ? "is" : "are"
+                } already on mysplitwise and now connected.`,
+              );
+            }
+            pulled = await pullState();
+          } catch (err) {
+            toast.error(
+              err instanceof Error
+                ? `Couldn't sync your existing data: ${err.message}`
+                : "Couldn't sync your existing data",
+            );
+          }
+        }
+        if (cancelled) return;
+        applyPulled(pulled);
+      } catch {
+        if (!cancelled) {
+          toast.error("You're viewing offline data — some info may be out of date");
+        }
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
     // Intentionally run once at mount for this authenticated user's session.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -220,6 +298,30 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       /* storage full / unavailable */
     }
   }, [state, loaded, storageKey]);
+
+  // Keep in sync with a friend's changes: poll while the tab is visible, and
+  // refetch immediately whenever the tab regains focus.
+  useEffect(() => {
+    if (!loaded) return;
+    const refresh = () => {
+      pullState().then(applyPulled).catch(() => {
+        /* keep showing current state; the next poll or focus may succeed */
+      });
+    };
+    const interval = setInterval(() => {
+      if (!document.hidden) refresh();
+    }, 30_000);
+    const onVisible = () => {
+      if (!document.hidden) refresh();
+    };
+    window.addEventListener("focus", refresh);
+    document.addEventListener("visibilitychange", onVisible);
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener("focus", refresh);
+      document.removeEventListener("visibilitychange", onVisible);
+    };
+  }, [loaded, applyPulled]);
 
   const getUser = useCallback(
     (id: string) => state.users.find((u) => u.id === id),
@@ -245,47 +347,91 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     const id = uid("e_");
     const expense: Expense = { ...e, id, createdAt: new Date().toISOString() };
     setState((s) => ({ ...s, expenses: [expense, ...s.expenses] }));
+    createExpenseApi(e).then(
+      ({ expense: serverExpense }) => {
+        setState((s) => ({
+          ...s,
+          expenses: s.expenses.map((x) => (x.id === id ? serverExpense : x)),
+        }));
+      },
+      (err) => {
+        setState((s) => ({ ...s, expenses: s.expenses.filter((x) => x.id !== id) }));
+        toast.error(err instanceof Error ? err.message : "Couldn't save that expense");
+      },
+    );
     return id;
   }, []);
 
   const updateExpense: StoreContextValue["updateExpense"] = useCallback(
     (id, patch) => {
-      setState((s) => ({
-        ...s,
-        expenses: s.expenses.map((e) => (e.id === id ? { ...e, ...patch } : e)),
-      }));
+      let previous: Expense | undefined;
+      setState((s) => {
+        previous = s.expenses.find((e) => e.id === id);
+        return {
+          ...s,
+          expenses: s.expenses.map((e) => (e.id === id ? { ...e, ...patch } : e)),
+        };
+      });
+      updateExpenseApi(id, patch).then(
+        ({ expense: serverExpense }) => {
+          setState((s) => ({
+            ...s,
+            expenses: s.expenses.map((e) => (e.id === id ? serverExpense : e)),
+          }));
+        },
+        (err) => {
+          setState((s) =>
+            previous
+              ? { ...s, expenses: s.expenses.map((e) => (e.id === id ? previous! : e)) }
+              : s,
+          );
+          toast.error(err instanceof Error ? err.message : "Couldn't update that expense");
+        },
+      );
     },
     [],
   );
 
   const deleteExpense: StoreContextValue["deleteExpense"] = useCallback((id) => {
-    setState((s) => ({ ...s, expenses: s.expenses.filter((e) => e.id !== id) }));
+    let removed: Expense | undefined;
+    setState((s) => {
+      removed = s.expenses.find((e) => e.id === id);
+      return { ...s, expenses: s.expenses.filter((e) => e.id !== id) };
+    });
+    deleteExpenseApi(id).catch((err) => {
+      setState((s) => (removed ? { ...s, expenses: [removed!, ...s.expenses] } : s));
+      toast.error(err instanceof Error ? err.message : "Couldn't delete that expense");
+    });
   }, []);
 
-  const addFriend: StoreContextValue["addFriend"] = useCallback(
-    (name, email) => {
-      const id = uid("u_");
-      const user: User = {
-        id,
-        name: name.trim(),
-        email: email.trim(),
-        avatarColor: pickAvatarColor(name + email),
-      };
-      setState((s) => ({ ...s, users: [...s.users, user] }));
-      return id;
-    },
-    [],
-  );
-
-  const removeFriend: StoreContextValue["removeFriend"] = useCallback((id) => {
+  const addFriend: StoreContextValue["addFriend"] = useCallback(async (name, email) => {
+    const { status, friend } = await addFriendApi(name, email);
     setState((s) => ({
       ...s,
-      users: s.users.filter((u) => u.id !== id),
-      groups: s.groups.map((g) => ({
-        ...g,
-        memberIds: g.memberIds.filter((m) => m !== id),
-      })),
+      users: s.users.some((u) => u.id === friend.id)
+        ? s.users.map((u) => (u.id === friend.id ? friend : u))
+        : [...s.users, friend],
     }));
+    return { id: friend.id, status };
+  }, []);
+
+  const removeFriend: StoreContextValue["removeFriend"] = useCallback((id) => {
+    let removedUser: User | undefined;
+    setState((s) => {
+      removedUser = s.users.find((u) => u.id === id);
+      return {
+        ...s,
+        users: s.users.filter((u) => u.id !== id),
+        groups: s.groups.map((g) => ({
+          ...g,
+          memberIds: g.memberIds.filter((m) => m !== id),
+        })),
+      };
+    });
+    removeFriendApi(id).catch((err) => {
+      setState((s) => (removedUser ? { ...s, users: [...s.users, removedUser!] } : s));
+      toast.error(err instanceof Error ? err.message : "Couldn't remove that friend");
+    });
   }, []);
 
   const addGroup: StoreContextValue["addGroup"] = useCallback(
@@ -300,6 +446,18 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
         createdAt: new Date().toISOString(),
       };
       setState((s) => ({ ...s, groups: [...s.groups, group] }));
+      createGroupApi(name.trim(), type, memberIds).then(
+        ({ group: serverGroup }) => {
+          setState((s) => ({
+            ...s,
+            groups: s.groups.map((g) => (g.id === id ? serverGroup : g)),
+          }));
+        },
+        (err) => {
+          setState((s) => ({ ...s, groups: s.groups.filter((g) => g.id !== id) }));
+          toast.error(err instanceof Error ? err.message : "Couldn't create that group");
+        },
+      );
       return id;
     },
     [],
@@ -307,23 +465,46 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
 
   const updateGroup: StoreContextValue["updateGroup"] = useCallback(
     (id, patch) => {
-      setState((s) => ({
-        ...s,
-        groups: s.groups.map((g) => (g.id === id ? { ...g, ...patch } : g)),
-      }));
+      let previous: Group | undefined;
+      setState((s) => {
+        previous = s.groups.find((g) => g.id === id);
+        return {
+          ...s,
+          groups: s.groups.map((g) => (g.id === id ? { ...g, ...patch } : g)),
+        };
+      });
+      updateGroupApi(id, patch).then(
+        ({ group: serverGroup }) => {
+          setState((s) => ({
+            ...s,
+            groups: s.groups.map((g) => (g.id === id ? serverGroup : g)),
+          }));
+        },
+        (err) => {
+          setState((s) =>
+            previous ? { ...s, groups: s.groups.map((g) => (g.id === id ? previous! : g)) } : s,
+          );
+          toast.error(err instanceof Error ? err.message : "Couldn't update that group");
+        },
+      );
     },
     [],
   );
 
   const deleteGroup: StoreContextValue["deleteGroup"] = useCallback((id) => {
-    setState((s) => ({
-      ...s,
-      groups: s.groups.filter((g) => g.id !== id),
-      // move group expenses to non-group
-      expenses: s.expenses.map((e) =>
-        e.groupId === id ? { ...e, groupId: null } : e,
-      ),
-    }));
+    let removed: Group | undefined;
+    setState((s) => {
+      removed = s.groups.find((g) => g.id === id);
+      return {
+        ...s,
+        groups: s.groups.filter((g) => g.id !== id),
+        expenses: s.expenses.map((e) => (e.groupId === id ? { ...e, groupId: null } : e)),
+      };
+    });
+    deleteGroupApi(id).catch((err) => {
+      setState((s) => (removed ? { ...s, groups: [...s.groups, removed!] } : s));
+      toast.error(err instanceof Error ? err.message : "Couldn't delete that group");
+    });
   }, []);
 
   const updateProfile: StoreContextValue["updateProfile"] = useCallback(
@@ -334,34 +515,41 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
           u.id === s.currentUserId ? { ...u, ...patch } : u,
         ),
       }));
+      // Your email is tied to your real mysplitwise login and isn't editable here.
+      const { email: _email, ...syncable } = patch;
+      if (Object.keys(syncable).length > 0) {
+        updateProfileApi(authUserId, syncable).catch((err) => {
+          toast.error(err instanceof Error ? err.message : "Couldn't save your profile changes");
+        });
+      }
     },
-    [],
+    [authUserId],
   );
 
-  const updateUser: StoreContextValue["updateUser"] = useCallback(
-    (id, patch) => {
-      setState((s) => ({
-        ...s,
-        users: s.users.map((u) => (u.id === id ? { ...u, ...patch } : u)),
-      }));
-    },
-    [],
-  );
+  const updateUser: StoreContextValue["updateUser"] = useCallback((id, patch) => {
+    setState((s) => ({
+      ...s,
+      users: s.users.map((u) => (u.id === id ? { ...u, ...patch } : u)),
+    }));
+    updateProfileApi(id, patch).catch((err) => {
+      toast.error(err instanceof Error ? err.message : "Couldn't save those changes");
+    });
+  }, []);
 
   const setBaseCurrency: StoreContextValue["setBaseCurrency"] = useCallback(
-    (code) => setState((s) => ({ ...s, baseCurrency: code })),
-    [],
+    (code) => {
+      setState((s) => ({ ...s, baseCurrency: code }));
+      updateProfileApi(authUserId, { baseCurrency: code }).catch(() => {});
+    },
+    [authUserId],
   );
 
   const setNotificationsRead: StoreContextValue["setNotificationsRead"] =
-    useCallback(
-      () =>
-        setState((s) => ({
-          ...s,
-          notificationsReadAt: new Date().toISOString(),
-        })),
-      [],
-    );
+    useCallback(() => {
+      const now = new Date().toISOString();
+      setState((s) => ({ ...s, notificationsReadAt: now }));
+      updateProfileApi(authUserId, { notificationsReadAt: now }).catch(() => {});
+    }, [authUserId]);
 
   const addComment: StoreContextValue["addComment"] = useCallback(
     (expenseId, text) => {
@@ -379,6 +567,34 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
             : e,
         ),
       }));
+      addCommentApi(expenseId, comment.text).then(
+        ({ comment: serverComment }) => {
+          setState((s) => ({
+            ...s,
+            expenses: s.expenses.map((e) =>
+              e.id === expenseId
+                ? {
+                    ...e,
+                    comments: (e.comments ?? []).map((c) =>
+                      c.id === comment.id ? serverComment : c,
+                    ),
+                  }
+                : e,
+            ),
+          }));
+        },
+        (err) => {
+          setState((s) => ({
+            ...s,
+            expenses: s.expenses.map((e) =>
+              e.id === expenseId
+                ? { ...e, comments: (e.comments ?? []).filter((c) => c.id !== comment.id) }
+                : e,
+            ),
+          }));
+          toast.error(err instanceof Error ? err.message : "Couldn't add that comment");
+        },
+      );
     },
     [state.currentUserId],
   );
@@ -391,39 +607,77 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       createdAt: new Date().toISOString(),
     };
     setState((s) => ({ ...s, recurring: [...s.recurring, rec] }));
+    createRecurringApi(r).then(
+      ({ recurring: serverRecurring }) => {
+        setState((s) => ({
+          ...s,
+          recurring: s.recurring.map((x) => (x.id === id ? serverRecurring : x)),
+        }));
+      },
+      (err) => {
+        setState((s) => ({ ...s, recurring: s.recurring.filter((x) => x.id !== id) }));
+        toast.error(err instanceof Error ? err.message : "Couldn't set up that recurring bill");
+      },
+    );
     return id;
   }, []);
 
   const updateRecurring: StoreContextValue["updateRecurring"] = useCallback(
     (id, patch) => {
-      setState((s) => ({
-        ...s,
-        recurring: s.recurring.map((r) =>
-          r.id === id ? { ...r, ...patch } : r,
-        ),
-      }));
+      let previous: RecurringExpense | undefined;
+      setState((s) => {
+        previous = s.recurring.find((r) => r.id === id);
+        return {
+          ...s,
+          recurring: s.recurring.map((r) => (r.id === id ? { ...r, ...patch } : r)),
+        };
+      });
+      updateRecurringApi(id, patch).then(
+        ({ recurring: serverRecurring }) => {
+          setState((s) => ({
+            ...s,
+            recurring: s.recurring.map((r) => (r.id === id ? serverRecurring : r)),
+          }));
+        },
+        (err) => {
+          setState((s) =>
+            previous
+              ? { ...s, recurring: s.recurring.map((r) => (r.id === id ? previous! : r)) }
+              : s,
+          );
+          toast.error(err instanceof Error ? err.message : "Couldn't update that recurring bill");
+        },
+      );
     },
     [],
   );
 
   const deleteRecurring: StoreContextValue["deleteRecurring"] = useCallback(
     (id) => {
-      setState((s) => ({
-        ...s,
-        recurring: s.recurring.filter((r) => r.id !== id),
-      }));
+      let removed: RecurringExpense | undefined;
+      setState((s) => {
+        removed = s.recurring.find((r) => r.id === id);
+        return { ...s, recurring: s.recurring.filter((r) => r.id !== id) };
+      });
+      deleteRecurringApi(id).catch((err) => {
+        setState((s) => (removed ? { ...s, recurring: [...s.recurring, removed!] } : s));
+        toast.error(err instanceof Error ? err.message : "Couldn't delete that recurring bill");
+      });
     },
     [],
   );
 
   const logRecurringNow: StoreContextValue["logRecurringNow"] = useCallback(
     (id) => {
+      const today = todayISO();
+      const tempExpenseId = uid("e_");
+      let localRecurring: RecurringExpense | undefined;
       setState((s) => {
         const r = s.recurring.find((x) => x.id === id);
         if (!r) return s;
-        const today = todayISO();
+        localRecurring = r;
         const expense: Expense = {
-          id: uid("e_"),
+          id: tempExpenseId,
           description: r.description,
           amount: r.amount,
           currency: r.currency,
@@ -440,12 +694,31 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
           ...s,
           expenses: [expense, ...s.expenses],
           recurring: s.recurring.map((x) =>
-            x.id === id
-              ? { ...x, nextDue: advanceDate(today, x.frequency) }
-              : x,
+            x.id === id ? { ...x, nextDue: advanceDate(today, x.frequency) } : x,
           ),
         };
       });
+      logRecurringNowApi(id).then(
+        ({ expense: serverExpense, recurring: serverRecurring }) => {
+          setState((s) => ({
+            ...s,
+            expenses: s.expenses.map((e) => (e.id === tempExpenseId ? serverExpense : e)),
+            recurring: serverRecurring
+              ? s.recurring.map((r) => (r.id === id ? serverRecurring : r))
+              : s.recurring,
+          }));
+        },
+        (err) => {
+          setState((s) => ({
+            ...s,
+            expenses: s.expenses.filter((e) => e.id !== tempExpenseId),
+            recurring: localRecurring
+              ? s.recurring.map((r) => (r.id === id ? localRecurring! : r))
+              : s.recurring,
+          }));
+          toast.error(err instanceof Error ? err.message : "Couldn't log that bill");
+        },
+      );
     },
     [],
   );
@@ -455,8 +728,9 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       if (payments.length === 0) return;
       const now = new Date().toISOString();
       const today = todayISO();
-      const newExpenses: Expense[] = payments.map((p) => ({
-        id: uid("e_"),
+      const tempIds = payments.map(() => uid("e_"));
+      const newExpenses: Expense[] = payments.map((p, i) => ({
+        id: tempIds[i],
         description: "Payment",
         amount: round2(p.amount),
         currency: p.currency,
@@ -472,6 +746,25 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
         isSettlement: true,
       }));
       setState((s) => ({ ...s, expenses: [...newExpenses, ...s.expenses] }));
+      addSettlementsApi(payments).then(
+        ({ expenses: serverExpenses }) => {
+          setState((s) => {
+            let next = s.expenses;
+            tempIds.forEach((tempId, i) => {
+              const serverExpense = serverExpenses[i];
+              if (serverExpense) next = next.map((e) => (e.id === tempId ? serverExpense : e));
+            });
+            return { ...s, expenses: next };
+          });
+        },
+        (err) => {
+          setState((s) => ({
+            ...s,
+            expenses: s.expenses.filter((e) => !tempIds.includes(e.id)),
+          }));
+          toast.error(err instanceof Error ? err.message : "Couldn't record that settlement");
+        },
+      );
     },
     [state.currentUserId],
   );
@@ -516,8 +809,11 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   );
 
   const setOnboarded: StoreContextValue["setOnboarded"] = useCallback(
-    (v) => setState((s) => ({ ...s, onboarded: v })),
-    [],
+    (v) => {
+      setState((s) => ({ ...s, onboarded: v }));
+      updateProfileApi(authUserId, { onboarded: v }).catch(() => {});
+    },
+    [authUserId],
   );
 
   const exportState: StoreContextValue["exportState"] = useCallback(
@@ -527,20 +823,35 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
 
   const importState: StoreContextValue["importState"] = useCallback((json) => {
     try {
-      const parsed = JSON.parse(json);
+      const parsed = migrate(JSON.parse(json));
       if (!parsed?.users?.length) return false;
-      setState(processRecurring(migrate(parsed)));
+      migrateLocalState(parsed)
+        .then(() => pullState())
+        .then((pulled) => {
+          applyPulled(pulled);
+          toast.success("Backup restored");
+        })
+        .catch((err) => {
+          toast.error(err instanceof Error ? err.message : "Couldn't restore that backup");
+        });
       setView({ type: "dashboard" });
       return true;
     } catch {
       return false;
     }
-  }, []);
+  }, [applyPulled]);
 
   const resetData: StoreContextValue["resetData"] = useCallback(() => {
-    setState({ ...blankState(), onboarded: true });
+    pullState()
+      .then((pulled) => {
+        setState((s) => ({ ...blankState(), ...s, templates: [] }));
+        applyPulled(pulled);
+      })
+      .catch(() => {
+        toast.error("Couldn't resync — check your connection and try again");
+      });
     setView({ type: "dashboard" });
-  }, [blankState]);
+  }, [blankState, applyPulled]);
 
   const value: StoreContextValue = {
     state,

@@ -69,12 +69,10 @@ export function AccountView() {
     const file = e.target.files?.[0];
     if (!file) return;
     const text = await file.text();
-    if (importState(text)) toast.success("Data restored from backup");
-    else toast.error("That doesn't look like a valid backup file");
+    if (!importState(text)) toast.error("That doesn't look like a valid backup file");
     if (fileRef.current) fileRef.current.value = "";
   };
   const [name, setName] = useState(currentUser.name);
-  const [email, setEmail] = useState(currentUser.email);
   const [color, setColor] = useState(currentUser.avatarColor);
   const [avatarUploading, setAvatarUploading] = useState(false);
   const photoRef = useRef<HTMLInputElement>(null);
@@ -100,17 +98,14 @@ export function AccountView() {
     toast.success("Photo removed");
   };
 
-  const dirty =
-    name !== currentUser.name ||
-    email !== currentUser.email ||
-    color !== currentUser.avatarColor;
+  const dirty = name !== currentUser.name || color !== currentUser.avatarColor;
 
   const save = () => {
     if (!name.trim()) {
       toast.error("Please enter your name");
       return;
     }
-    updateProfile({ name: name.trim(), email: email.trim(), avatarColor: color });
+    updateProfile({ name: name.trim(), avatarColor: color });
     toast.success("Profile updated");
   };
 
@@ -150,7 +145,7 @@ export function AccountView() {
           </div>
           <div className="flex-1">
             <p className="text-lg font-bold text-sw-charcoal">{name || "Your name"}</p>
-            <p className="text-sm text-muted-foreground">{email || "your@email.com"}</p>
+            <p className="text-sm text-muted-foreground">{currentUser.email}</p>
             {currentUser.avatarUrl && (
               <button
                 type="button"
@@ -175,13 +170,11 @@ export function AccountView() {
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="acc-email">Email</Label>
-            <Input
-              id="acc-email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="your@email.com"
-            />
+            <Input id="acc-email" type="email" value={currentUser.email} disabled />
+            <p className="text-xs text-muted-foreground">
+              This is your mysplitwise login — friends find you by it, so it can&apos;t
+              be changed here.
+            </p>
           </div>
         </div>
 

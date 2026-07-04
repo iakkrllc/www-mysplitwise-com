@@ -60,10 +60,19 @@ export function FriendView({ friendId }: { friendId: string }) {
         <div className="flex items-center gap-4">
           <UserAvatar user={friend} size={64} />
           <div>
-            <h1 className="text-2xl font-extrabold text-sw-charcoal">
+            <h1 className="flex items-center gap-2 text-2xl font-extrabold text-sw-charcoal">
               {friend.name}
+              {friend.pending && (
+                <span className="rounded-full bg-secondary px-2 py-0.5 text-xs font-bold uppercase tracking-wide text-primary">
+                  Invited
+                </span>
+              )}
             </h1>
-            <p className="text-sm text-muted-foreground">{friend.email}</p>
+            <p className="text-sm text-muted-foreground">
+              {friend.pending
+                ? "Hasn't joined mysplitwise yet — you'll be connected as soon as they do."
+                : friend.email}
+            </p>
           </div>
         </div>
         <div className="flex gap-2">

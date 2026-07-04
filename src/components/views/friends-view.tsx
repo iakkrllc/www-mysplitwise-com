@@ -9,7 +9,6 @@ import { Button } from "../ui/button";
 import { InviteFriend } from "../invite-friend";
 import { cn } from "@/lib/utils";
 import { ArrowRight, UserPlus, Users } from "lucide-react";
-import { toast } from "sonner";
 
 export function FriendsView() {
   const { state, currentUser, baseExpenses, setView } = useStore();
@@ -110,8 +109,13 @@ export function FriendsView() {
                 >
                   <UserAvatar user={user} size={44} />
                   <div className="min-w-0 flex-1">
-                    <p className="truncate font-bold text-sw-charcoal">
-                      {user.name}
+                    <p className="flex items-center gap-1.5 truncate font-bold text-sw-charcoal">
+                      <span className="truncate">{user.name}</span>
+                      {user.pending && (
+                        <span className="shrink-0 rounded-full bg-secondary px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-primary">
+                          Invited
+                        </span>
+                      )}
                     </p>
                     <p
                       className={cn(
@@ -140,9 +144,7 @@ export function FriendsView() {
                         size="sm"
                         className="flex-1"
                         onClick={() =>
-                          toast.success(
-                            `Reminder sent to ${user.name.split(" ")[0]}`,
-                          )
+                          openModal({ kind: "reminderDraft", friendId: user.id })
                         }
                       >
                         Remind
