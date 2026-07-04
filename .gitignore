@@ -46,15 +46,19 @@ next-env.d.ts
 .vercel
 .env*
 
-# Capacitor / native mobile build output (keep android/ and ios/ project source committed)
-android/app/build/
-android/build/
-android/.gradle/
-android/local.properties
-ios/App/Pods/
-ios/App/build/
-ios/App/DerivedData/
-ios/.build/
+# Native mobile build output (keep android-app/ and ios-app/ project source committed)
+android-app/app/build/
+android-app/build/
+android-app/.gradle/
+android-app/local.properties
+android-app/secrets.properties
+android-app/hs_err_pid*.log
+ios-app/MysplitwiseApp.xcodeproj/
+ios-app/MysplitwiseCore/.build/
+ios-app/MysplitwiseCore/.swiftpm/
+ios-app/*.xcworkspace/
+ios-app/DerivedData/
+ios-app/Configs/*.local.xcconfig
 *.ipa
 *.aab
 *.apk

@@ -1,0 +1,5 @@
+// Placeholder values — replaced with real Supabase project credentials once provided.
+// Xcode build settings can't hold values with "//" (comment-breaking), so the
+// Supabase anon key (a JWT with dots, no slashes/hashes) is safe to store here directly.
+SUPABASE_URL = https:/$()/replace-me.supabase.co
+SUPABASE_ANON_KEY = replace-me-with-real-anon-key

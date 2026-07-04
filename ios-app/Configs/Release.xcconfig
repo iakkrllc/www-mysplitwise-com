@@ -1,0 +1,3 @@
+// Placeholder values — replaced with real Supabase project credentials once provided.
+SUPABASE_URL = https:/$()/replace-me.supabase.co
+SUPABASE_ANON_KEY = replace-me-with-real-anon-key
