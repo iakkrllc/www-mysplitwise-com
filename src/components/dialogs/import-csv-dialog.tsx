@@ -258,8 +258,9 @@ export function ImportCsvDialog() {
         {stage === "upload" && (
           <div className="space-y-4 py-2">
             <p className="text-sm text-muted-foreground">
-              Download mysplitwise&apos;s CSV template, fill it in by hand (works great from a
-              Mysplitwise export you&apos;ve copied over, or from scratch), then upload it here.
+              Download mysplitwise&apos;s CSV template, fill it in by hand (works great from
+              another expense-tracking app&apos;s export you&apos;ve copied over, or from scratch),
+              then upload it here.
             </p>
             <Button variant="outline" className="gap-2" onClick={downloadTemplate}>
               <Download className="h-4 w-4" /> Download template

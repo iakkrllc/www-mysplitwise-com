@@ -1,6 +1,6 @@
 # mysplitwise — Technical Documentation
 
-This is the detailed technical reference for **mysplitwise.com**, a Mysplitwise-style bill-splitting app. It complements the shorter architecture summary in `README.md` — this file goes deeper into data models, request flows, and the reasoning behind key decisions, so future work (by a person or an AI assistant) can extend the app consistently instead of guessing.
+This is the detailed technical reference for **mysplitwise.com**, a bill-splitting and shared-expense tracking app. It complements the shorter architecture summary in `README.md` — this file goes deeper into data models, request flows, and the reasoning behind key decisions, so future work (by a person or an AI assistant) can extend the app consistently instead of guessing.
 
 ## Table of contents
 
@@ -23,7 +23,7 @@ This is the detailed technical reference for **mysplitwise.com**, a Mysplitwise-
 
 ## Overview
 
-mysplitwise lets people track shared expenses and settle up with friends, similarly to Mysplitwise. It is a single Next.js codebase serving:
+mysplitwise lets people track shared expenses and settle up with friends. It is a single Next.js codebase serving:
 
 - A marketing/landing page (`/`)
 - The signed-in web app (`/app`)
@@ -223,7 +223,7 @@ A private, per-user setting (`recurringDue`, `comment`, `settlementReceived`, `s
 
 ### CSV import
 
-Mysplitwise no longer offers a simple data export, so instead of trying to parse their format, mysplitwise ships its **own** CSV template (`src/lib/csv-import.ts` — a small dependency-free parser handling quoted/embedded-comma fields, matching this project's general habit of writing tiny parsers instead of adding npm dependencies, e.g. the User-Agent parser in `request-meta.ts`). The import wizard (`import-csv-dialog.tsx`) is a 3-stage flow:
+Rather than trying to parse another app's proprietary export format, mysplitwise ships its **own** CSV template (`src/lib/csv-import.ts` — a small dependency-free parser handling quoted/embedded-comma fields, matching this project's general habit of writing tiny parsers instead of adding npm dependencies, e.g. the User-Agent parser in `request-meta.ts`). The import wizard (`import-csv-dialog.tsx`) is a 3-stage flow:
 
 1. **Upload & validate** — parse the file, validate every row, report exactly which rows are invalid and why.
 2. **Name mapping** — every unique name from the `PaidBy`/`SplitWith` columns must be resolved to "this is me," an existing friend, or a brand-new friend added by real email (via the same `addFriend` flow as the regular Add Friend dialog) before continuing — this is what stops an import from ever creating a fabricated, unlinked identity.

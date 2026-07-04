@@ -1,12 +1,12 @@
-# mysplitwise — Mysplitwise clone
+# mysplitwise
 
-A fully functional clone of mysplitwise.com.
+A full-featured bill-splitting and shared-expense tracking app.
 
 ## Done
-- [x] Project setup (Next.js + shadcn, Mulish font, Mysplitwise brand colors)
+- [x] Project setup (Next.js + shadcn, Mulish font, custom brand palette)
 - [x] Data layer: types, categories, split math, balance engine, debt simplification
 - [x] Store with localStorage persistence + navigation + CRUD actions
-- [x] Mysplitwise faceted-diamond logo + avatars + category icons
+- [x] Custom overlapping-circles logo mark + avatars + category icons
 - [x] Header (logo, Add expense, Settle up, account menu, mobile drawer)
 - [x] Sidebar (Dashboard / Activity / All expenses, Groups, Friends w/ live balances)
 - [x] Dashboard view (summary bar + you owe / you are owed)

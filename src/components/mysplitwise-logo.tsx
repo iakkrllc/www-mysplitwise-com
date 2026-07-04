@@ -1,5 +1,10 @@
 import { cn } from "@/lib/utils";
 
+/**
+ * The mysplitwise mark: two overlapping circles — one person's share and
+ * another's, meeting in the middle. Deliberately its own geometry (a single
+ * rounded square + a Venn overlap), not a diamond/rhombus shape.
+ */
 export function MysplitwiseMark({
   className,
   size = 28,
@@ -15,33 +20,9 @@ export function MysplitwiseMark({
       className={cn("shrink-0", className)}
       aria-hidden="true"
     >
-      <rect
-        x="14"
-        y="22"
-        width="58"
-        height="58"
-        rx="16"
-        fill="#22A85A"
-        transform="rotate(-10 43 51)"
-      />
-      <rect
-        x="28"
-        y="20"
-        width="58"
-        height="58"
-        rx="16"
-        fill="#7C3AED"
-        opacity="0.94"
-        transform="rotate(10 57 49)"
-      />
-      <path
-        d="M40 38 L60 38 L48 50 L60 62 L40 62"
-        fill="none"
-        stroke="#ffffff"
-        strokeWidth="7"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
+      <rect x="10" y="10" width="80" height="80" rx="20" fill="#7C3AED" />
+      <circle cx="38" cy="50" r="21" fill="#ffffff" />
+      <circle cx="62" cy="50" r="21" fill="#ffffff" opacity="0.55" />
     </svg>
   );
 }

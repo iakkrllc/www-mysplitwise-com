@@ -2,7 +2,7 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 
 ## Infrastructure & architecture reference
 
-mysplitwise (**mysplitwise.com**) is a Mysplitwise-style bill-splitting app. This section is the living reference for how it's built, hosted, and run in production — kept up to date as the app grows.
+mysplitwise (**mysplitwise.com**) is a bill-splitting and shared-expense tracking app. This section is the living reference for how it's built, hosted, and run in production — kept up to date as the app grows.
 
 ### Tech stack at a glance
 
@@ -53,7 +53,7 @@ mysplitwise (**mysplitwise.com**) is a Mysplitwise-style bill-splitting app. Thi
 - **Recurring expenses**: due bills are materialized both optimistically on the client (`processRecurring`) and authoritatively on the server on every pull (`materializeDueRecurring`), so nothing is missed if the client was never open when a bill came due.
 - **Settlements & dispute trail**: "Settle Up" only deep-links to Venmo/PayPal/Cash App — mysplitwise never moves money itself (deliberately, to avoid money-transmitter licensing). Because of that, a dispute flag on a settlement is a **transparency tool, not fraud prevention**: it lets the payee flag "I never actually received this," visible to both parties and to staff, but can't verify real-world payment.
 - **Data-wipe guardrails**: once an account has any real expense/group/friend data, the "clear all data" action requires extra confirmation rather than being a single casual click — added after an incident where local-only data made wiping too easy.
-- **CSV import** (`src/lib/csv-import.ts`, `import-csv-dialog.tsx`): since Mysplitwise no longer offers a simple export, mysplitwise ships its **own** CSV template (dependency-free parser, no `papaparse`) that users fill in by hand. A 3-stage wizard (upload & validate → map every name to "me" / an existing friend / a new friend added by real email → import) deliberately reuses the same friend-linking-by-email flow as the regular Add Friend dialog, so an import can never create a fabricated, unlinked identity.
+- **CSV import** (`src/lib/csv-import.ts`, `import-csv-dialog.tsx`): rather than trying to parse another app's proprietary export format, mysplitwise ships its **own** CSV template (dependency-free parser, no `papaparse`) that users fill in by hand. A 3-stage wizard (upload & validate → map every name to "me" / an existing friend / a new friend added by real email → import) deliberately reuses the same friend-linking-by-email flow as the regular Add Friend dialog, so an import can never create a fabricated, unlinked identity.
 - **Notification preferences**: a private per-user setting (recurring due, comments, settlements received/disputed, AI nudges, friend-owes-you, you-owe-friend) controlling the in-app bell only. Architecturally kept as a top-level `AppState`/pull-response field — **never** passed through the shared `rowToUser` serializer — since that serializer's output is visible to every friend and co-group-member a pull returns.
 - **Phone number changes**: real Supabase Auth OTP flow (`updateUser({phone})` → texts a code → `verifyOtp(..., type: "phone_change")`), the same trust model already used for phone login, so `profiles.phone` is as verified as `profiles.email`.
 
