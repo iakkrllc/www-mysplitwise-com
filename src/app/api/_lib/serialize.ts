@@ -30,6 +30,7 @@ export interface ProfileRow {
   paypal: string | null;
   cashapp: string | null;
   is_placeholder: boolean;
+  support_id?: string | null;
 }
 
 export function rowToUser(row: ProfileRow): User {
@@ -42,6 +43,7 @@ export function rowToUser(row: ProfileRow): User {
     venmo: row.venmo ?? undefined,
     paypal: row.paypal ?? undefined,
     cashapp: row.cashapp ?? undefined,
+    supportId: row.support_id ?? undefined,
     ...(row.is_placeholder ? { pending: true } : {}),
   };
 }

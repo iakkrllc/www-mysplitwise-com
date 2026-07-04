@@ -32,6 +32,7 @@ import {
   X,
   Send,
   Trash2,
+  Copy,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -146,6 +147,24 @@ export function AccountView() {
           <div className="flex-1">
             <p className="text-lg font-bold text-sw-charcoal">{name || "Your name"}</p>
             <p className="text-sm text-muted-foreground">{currentUser.email}</p>
+            {currentUser.supportId && (
+              <button
+                type="button"
+                onClick={async () => {
+                  try {
+                    await navigator.clipboard.writeText(currentUser.supportId!);
+                    toast.success("Copied");
+                  } catch {
+                    toast.error("Couldn't copy");
+                  }
+                }}
+                className="mt-0.5 flex items-center gap-1 font-mono text-xs text-muted-foreground hover:text-primary"
+                title="Your support reference ID — quote this to customer support"
+              >
+                {currentUser.supportId}
+                <Copy className="h-3 w-3" />
+              </button>
+            )}
             {currentUser.avatarUrl && (
               <button
                 type="button"

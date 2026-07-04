@@ -9,6 +9,8 @@ export interface User {
   cashapp?: string;
   /** True if this person hasn't joined mysplitwise yet — invited by email, not yet connectable. */
   pending?: boolean;
+  /** Short reference ID (e.g. MSW-A3F91C2D) for customer support to look up an account by. */
+  supportId?: string;
 }
 
 export type GroupType = "trip" | "home" | "couple" | "other";

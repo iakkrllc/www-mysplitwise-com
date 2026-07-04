@@ -16,6 +16,12 @@ export async function GET(req: NextRequest) {
     const { data, error } = await supabase.auth.admin.listUsers({ page: 1, perPage: 1000 });
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
+    const { data: profileRows } = await supabase
+      .from("profiles")
+      .select("id, support_id")
+      .in("id", data.users.map((u) => u.id));
+    const supportIdById = new Map((profileRows ?? []).map((p) => [p.id, p.support_id]));
+
     const users = data.users.map((u) => ({
       id: u.id,
       email: u.email ?? null,
@@ -23,6 +29,7 @@ export async function GET(req: NextRequest) {
       name: (u.user_metadata?.name as string) ?? null,
       created_at: u.created_at,
       last_sign_in_at: u.last_sign_in_at ?? null,
+      support_id: supportIdById.get(u.id) ?? null,
     }));
 
     return NextResponse.json({ users });

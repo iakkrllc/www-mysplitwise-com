@@ -316,10 +316,12 @@ interface AppUser {
   name: string | null;
   created_at: string;
   last_sign_in_at: string | null;
+  support_id: string | null;
 }
 
 function UsersSection() {
   const [users, setUsers] = useState<AppUser[] | null>(null);
+  const [search, setSearch] = useState("");
 
   useEffect(() => {
     callAdminApi("/api/admin/users")
@@ -327,40 +329,61 @@ function UsersSection() {
       .catch((err) => toast.error(err.message));
   }, []);
 
+  const filtered = (users ?? []).filter((u) => {
+    if (!search.trim()) return true;
+    const q = search.trim().toLowerCase();
+    return (
+      u.name?.toLowerCase().includes(q) ||
+      u.email?.toLowerCase().includes(q) ||
+      u.phone?.toLowerCase().includes(q) ||
+      u.support_id?.toLowerCase().includes(q)
+    );
+  });
+
   return (
     <Card
       title="User accounts"
-      subtitle="Account-level info only — expenses, friends and balances live in each user's own browser, not here."
+      subtitle="Account-level info, plus each account's support reference ID — a caller can quote this instead of spelling out a name or email."
     >
       {users === null ? (
         <p className="text-sm text-muted-foreground">Loading…</p>
       ) : users.length === 0 ? (
         <p className="text-sm text-muted-foreground">No accounts yet.</p>
       ) : (
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-border text-left text-xs uppercase text-muted-foreground">
-                <th className="pb-2 pr-3">Name</th>
-                <th className="pb-2 pr-3">Email / phone</th>
-                <th className="pb-2 pr-3">Signed up</th>
-                <th className="pb-2">Last login</th>
-              </tr>
-            </thead>
-            <tbody>
-              {users.map((u) => (
-                <tr key={u.id} className="border-b border-border/60">
-                  <td className="py-2 pr-3">{u.name ?? "—"}</td>
-                  <td className="py-2 pr-3">{u.email ?? u.phone ?? "—"}</td>
-                  <td className="py-2 pr-3">{new Date(u.created_at).toLocaleDateString()}</td>
-                  <td className="py-2">
-                    {u.last_sign_in_at ? new Date(u.last_sign_in_at).toLocaleString() : "—"}
-                  </td>
+        <>
+          <Input
+            placeholder="Search by name, email, phone, or support ID…"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="mb-3"
+          />
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-border text-left text-xs uppercase text-muted-foreground">
+                  <th className="pb-2 pr-3">Name</th>
+                  <th className="pb-2 pr-3">Email / phone</th>
+                  <th className="pb-2 pr-3">Support ID</th>
+                  <th className="pb-2 pr-3">Signed up</th>
+                  <th className="pb-2">Last login</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody>
+                {filtered.map((u) => (
+                  <tr key={u.id} className="border-b border-border/60">
+                    <td className="py-2 pr-3">{u.name ?? "—"}</td>
+                    <td className="py-2 pr-3">{u.email ?? u.phone ?? "—"}</td>
+                    <td className="py-2 pr-3 font-mono text-xs">{u.support_id ?? "—"}</td>
+                    <td className="py-2 pr-3">{new Date(u.created_at).toLocaleDateString()}</td>
+                    <td className="py-2">
+                      {u.last_sign_in_at ? new Date(u.last_sign_in_at).toLocaleString() : "—"}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </>
       )}
     </Card>
   );

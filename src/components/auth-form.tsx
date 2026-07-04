@@ -205,9 +205,14 @@ function PhoneAuthForm({ mode }: { mode: "login" | "signup" }) {
       setError("Enter your number with country code, e.g. +1 555 123 4567");
       return;
     }
+    // Strip spaces/dashes/parens so the same number always maps to one
+    // account, regardless of how it was typed (e.g. "+1 555 123 4567" and
+    // "+15551234567" would otherwise look like two different numbers).
+    const normalized = "+" + phone.trim().replace(/\D/g, "");
+    setPhone(normalized);
     setSubmitting(true);
     const { error } = await sendPhoneOtp(
-      phone.trim(),
+      normalized,
       mode === "signup" ? name.trim() : undefined,
     );
     setSubmitting(false);

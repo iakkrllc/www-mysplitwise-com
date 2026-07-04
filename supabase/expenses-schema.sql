@@ -224,3 +224,14 @@ alter table expenses
   add column dispute_reason text,
   add column disputed_by uuid references profiles(id),
   add column disputed_at timestamptz;
+
+-- Feature: a short, stable, random-looking reference ID per account (e.g.
+-- MSW-A3F91C2D) for customer support to look someone up by instead of
+-- relying on name/email/phone over a call. Derived from the profile's own
+-- id (already globally unique), so every existing and future row gets one
+-- automatically with no application code changes needed. Run once.
+alter table profiles
+  add column support_id text generated always as (
+    'MSW-' || upper(substr(replace(id::text, '-', ''), 1, 8))
+  ) stored;
+create unique index profiles_support_id_idx on profiles (support_id);
