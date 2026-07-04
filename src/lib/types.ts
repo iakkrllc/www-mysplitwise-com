@@ -11,7 +11,35 @@ export interface User {
   pending?: boolean;
   /** Short reference ID (e.g. MSW-A3F91C2D) for customer support to look up an account by. */
   supportId?: string;
+  /** Verified phone number (only ever set after a real OTP confirmation). */
+  phone?: string;
 }
+
+/**
+ * Controls what shows up in mysplitwise's in-app notification bell — there is
+ * no email or push notification system in this app, this only affects the bell.
+ * A private preference, not a profile fact: only ever populated on the
+ * signed-in user's own `currentUser`, never on a friend's `User` object.
+ */
+export interface NotificationPrefs {
+  recurringDue: boolean;
+  comment: boolean;
+  settlementReceived: boolean;
+  settlementDisputed: boolean;
+  aiNudge: boolean;
+  friendOwesYou: boolean;
+  youOweFriend: boolean;
+}
+
+export const DEFAULT_NOTIFICATION_PREFS: NotificationPrefs = {
+  recurringDue: true,
+  comment: true,
+  settlementReceived: true,
+  settlementDisputed: true,
+  aiNudge: true,
+  friendOwesYou: true,
+  youOweFriend: true,
+};
 
 export type GroupType = "trip" | "home" | "couple" | "other";
 
@@ -127,6 +155,7 @@ export interface AppState {
   templates: ExpenseTemplate[];
   notificationsReadAt?: string;
   onboarded?: boolean;
+  notificationPrefs?: NotificationPrefs;
 }
 
 /** A single "from owes to" relationship */

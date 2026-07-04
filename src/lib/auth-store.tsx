@@ -23,6 +23,12 @@ interface AuthContextValue {
     token: string,
   ) => Promise<{ error: string | null }>;
   signOut: () => Promise<void>;
+  updatePassword: (newPassword: string) => Promise<{ error: string | null }>;
+  startPhoneChange: (phone: string) => Promise<{ error: string | null }>;
+  confirmPhoneChange: (
+    phone: string,
+    code: string,
+  ) => Promise<{ error: string | null }>;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -140,6 +146,30 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     await supabase.auth.signOut();
   };
 
+  const updatePassword: AuthContextValue["updatePassword"] = async (newPassword) => {
+    const { error } = await supabase.auth.updateUser({ password: newPassword });
+    return { error: error?.message ?? null };
+  };
+
+  // Texts an OTP to the NEW number for an already-signed-in user — different
+  // from sendPhoneOtp above, which is the sign-in/sign-up flow.
+  const startPhoneChange: AuthContextValue["startPhoneChange"] = async (phone) => {
+    const { error } = await supabase.auth.updateUser({ phone });
+    return { error: error?.message ?? null };
+  };
+
+  const confirmPhoneChange: AuthContextValue["confirmPhoneChange"] = async (
+    phone,
+    code,
+  ) => {
+    const { error } = await supabase.auth.verifyOtp({
+      phone,
+      token: code,
+      type: "phone_change",
+    });
+    return { error: error?.message ?? null };
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -151,6 +181,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         sendPhoneOtp,
         verifyPhoneOtp,
         signOut,
+        updatePassword,
+        startPhoneChange,
+        confirmPhoneChange,
       }}
     >
       {children}

@@ -22,6 +22,8 @@ import { PaymentInfoDialog } from "./dialogs/payment-info-dialog";
 import { DeleteAccountDialog } from "./dialogs/delete-account-dialog";
 import { AskAiDialog } from "./dialogs/ask-ai-dialog";
 import { ReminderDialog } from "./dialogs/reminder-dialog";
+import { PhoneChangeDialog } from "./dialogs/phone-change-dialog";
+import { ImportCsvDialog } from "./dialogs/import-csv-dialog";
 import { Toaster } from "./ui/sonner";
 import { MysplitwiseMark } from "./mysplitwise-logo";
 
@@ -87,6 +89,8 @@ export function AppShell() {
       <DeleteAccountDialog />
       <AskAiDialog />
       <ReminderDialog />
+      <PhoneChangeDialog />
+      <ImportCsvDialog />
       <Toaster position="bottom-right" richColors />
     </div>
   );

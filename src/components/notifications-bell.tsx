@@ -62,10 +62,12 @@ export function NotificationsBell() {
   const notifs = useMemo<Notif[]>(() => {
     const timed: Notif[] = [];
     const standing: Notif[] = [];
+    const prefs = currentUser.notificationPrefs;
 
     // Recurring due within a week (or overdue)
     for (const r of state.recurring) {
       if (!r.active) continue;
+      if (prefs.recurringDue === false) continue;
       if (daysUntil(r.nextDue) <= 7) {
         standing.push({
           id: `rec-${r.id}`,
@@ -92,6 +94,7 @@ export function NotificationsBell() {
     for (const e of state.expenses) {
       for (const c of e.comments ?? []) {
         if (c.userId === currentUser.id) continue;
+        if (prefs.comment === false) continue;
         timed.push({
           id: `c-${c.id}`,
           icon: MessageSquare,
@@ -112,7 +115,7 @@ export function NotificationsBell() {
       if (e.isSettlement) {
         const payee = e.shares.find((s) => s.owed > 0.001);
         const payer = e.shares.find((s) => s.paid > 0.001);
-        if (payee?.userId === currentUser.id) {
+        if (payee?.userId === currentUser.id && prefs.settlementReceived !== false) {
           timed.push({
             id: `p-${e.id}`,
             icon: ArrowRightLeft,
@@ -130,7 +133,7 @@ export function NotificationsBell() {
             },
           });
         }
-        if (e.disputed && e.createdBy === currentUser.id) {
+        if (e.disputed && e.createdBy === currentUser.id && prefs.settlementDisputed !== false) {
           timed.push({
             id: `dispute-${e.id}`,
             icon: AlertTriangle,
@@ -153,7 +156,7 @@ export function NotificationsBell() {
     }
 
     // Predicted spending patterns that look overdue (e.g. groceries every ~7 days)
-    for (const n of predictedNudges(state.expenses)) {
+    for (const n of prefs.aiNudge === false ? [] : predictedNudges(state.expenses)) {
       standing.push({
         id: `nudge-${n.key}`,
         icon: Sparkles,
@@ -183,7 +186,7 @@ export function NotificationsBell() {
     const friends = state.users.filter((u) => u.id !== currentUser.id);
     for (const f of friends) {
       const bal = balanceBetween(currentUser.id, f.id, baseExpenses);
-      if (bal > 0.5) {
+      if (bal > 0.5 && prefs.friendOwesYou !== false) {
         standing.push({
           id: `owed-${f.id}`,
           icon: HandCoins,
@@ -198,7 +201,7 @@ export function NotificationsBell() {
             run: () => openModal({ kind: "reminderDraft", friendId: f.id }),
           },
         });
-      } else if (bal < -0.5) {
+      } else if (bal < -0.5 && prefs.youOweFriend !== false) {
         standing.push({
           id: `owe-${f.id}`,
           icon: Scale,
@@ -225,7 +228,15 @@ export function NotificationsBell() {
     timed.sort((a, b) => +new Date(b.at as string) - +new Date(a.at as string));
     return [...standing.filter((n) => n.id.startsWith("rec-")), ...timed, ...standing.filter((n) => !n.id.startsWith("rec-"))];
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [state.recurring, state.expenses, state.users, baseExpenses, base, currentUser.id]);
+  }, [
+    state.recurring,
+    state.expenses,
+    state.users,
+    baseExpenses,
+    base,
+    currentUser.id,
+    currentUser.notificationPrefs,
+  ]);
 
   const unread = useMemo(() => {
     const readAt = state.notificationsReadAt

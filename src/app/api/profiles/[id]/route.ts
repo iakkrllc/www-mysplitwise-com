@@ -51,6 +51,12 @@ export async function PATCH(
       patch.notifications_read_at = body.notificationsReadAt;
     }
     if (isSelf && typeof body.onboarded === "boolean") patch.onboarded = body.onboarded;
+    if (isSelf && (typeof body.phone === "string" || body.phone === null)) {
+      patch.phone = body.phone;
+    }
+    if (isSelf && body.notificationPrefs && typeof body.notificationPrefs === "object") {
+      patch.notification_prefs = body.notificationPrefs;
+    }
 
     if (Object.keys(patch).length === 0) {
       return NextResponse.json({ error: "Nothing to update" }, { status: 400 });

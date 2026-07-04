@@ -5,6 +5,7 @@ import type {
   Expense,
   Group,
   GroupType,
+  NotificationPrefs,
   RecurringExpense,
   User,
 } from "./types";
@@ -13,6 +14,7 @@ export interface PullResponse {
   baseCurrency: string;
   onboarded: boolean;
   notificationsReadAt?: string;
+  notificationPrefs?: Partial<NotificationPrefs>;
   users: User[];
   groups: Group[];
   expenses: Expense[];

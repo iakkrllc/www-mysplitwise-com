@@ -30,7 +30,9 @@ export type Modal =
   | { kind: "paymentInfo"; userId: string }
   | { kind: "deleteAccount" }
   | { kind: "askAi" }
-  | { kind: "reminderDraft"; friendId: string };
+  | { kind: "reminderDraft"; friendId: string }
+  | { kind: "changePhone" }
+  | { kind: "importCsv" };
 
 interface UIContextValue {
   modal: Modal;

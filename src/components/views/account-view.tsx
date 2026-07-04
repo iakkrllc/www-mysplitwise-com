@@ -11,6 +11,7 @@ import { TrendsPanel } from "../trends-panel";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
+import { Switch } from "../ui/switch";
 import {
   Select,
   SelectContent,
@@ -20,6 +21,8 @@ import {
 } from "../ui/select";
 import { CURRENCIES } from "@/lib/currency";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/lib/auth-store";
+import { DEFAULT_NOTIFICATION_PREFS, type NotificationPrefs } from "@/lib/types";
 import {
   Check,
   RotateCcw,
@@ -33,8 +36,22 @@ import {
   Send,
   Trash2,
   Copy,
+  Phone,
+  KeyRound,
+  Bell,
+  FileSpreadsheet,
 } from "lucide-react";
 import { toast } from "sonner";
+
+const NOTIFICATION_TYPES: { key: keyof NotificationPrefs; label: string; hint: string }[] = [
+  { key: "recurringDue", label: "Recurring bills due", hint: "A recurring bill is due soon or overdue" },
+  { key: "comment", label: "Comments", hint: "Someone comments on a shared expense" },
+  { key: "settlementReceived", label: "Payments received", hint: "A friend pays you through Settle Up" },
+  { key: "settlementDisputed", label: "Disputed payments", hint: "Someone disputes a payment you logged" },
+  { key: "aiNudge", label: "Spending nudges", hint: "AI notices a pattern, like a bill you log every month" },
+  { key: "friendOwesYou", label: "Friend owes you", hint: "A friend's balance with you goes positive" },
+  { key: "youOweFriend", label: "You owe a friend", hint: "Your balance with a friend goes negative" },
+];
 
 const COLORS = [
   "#7C3AED", "#FF8A5B", "#6C8AE4", "#C566B5", "#E4694A",
@@ -53,9 +70,38 @@ export function AccountView() {
     setBaseCurrency,
     exportState,
     importState,
+    updateNotificationPrefs,
   } = useStore();
+  const { updatePassword } = useAuth();
   const { openModal } = useUI();
   const fileRef = useRef<HTMLInputElement>(null);
+
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [savingPassword, setSavingPassword] = useState(false);
+
+  const savePassword = async () => {
+    if (newPassword.length < 6) {
+      toast.error("Password must be at least 6 characters");
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      toast.error("Passwords don't match");
+      return;
+    }
+    setSavingPassword(true);
+    const { error } = await updatePassword(newPassword);
+    setSavingPassword(false);
+    if (error) {
+      toast.error(error);
+      return;
+    }
+    setNewPassword("");
+    setConfirmPassword("");
+    toast.success("Password updated");
+  };
+
+  const notificationPrefs = currentUser.notificationPrefs ?? DEFAULT_NOTIFICATION_PREFS;
 
   const backup = () => {
     downloadFile(
@@ -195,6 +241,28 @@ export function AccountView() {
               be changed here.
             </p>
           </div>
+          <div className="space-y-1.5 sm:col-span-2">
+            <Label htmlFor="acc-phone">Phone number</Label>
+            <div className="flex items-center gap-2">
+              <Input
+                id="acc-phone"
+                type="tel"
+                value={currentUser.phone ?? ""}
+                placeholder="Not set"
+                disabled
+                className="flex-1"
+              />
+              <Button
+                type="button"
+                variant="outline"
+                className="gap-2 shrink-0"
+                onClick={() => openModal({ kind: "changePhone" })}
+              >
+                <Phone className="h-4 w-4" />
+                {currentUser.phone ? "Change" : "Add phone"}
+              </Button>
+            </div>
+          </div>
         </div>
 
         <div className="mt-5 space-y-2">
@@ -259,6 +327,71 @@ export function AccountView() {
               ))}
             </SelectContent>
           </Select>
+        </div>
+      </div>
+
+      {/* Password */}
+      <div className="mt-6 rounded-2xl border border-border bg-card p-6">
+        <h2 className="flex items-center gap-2 font-bold text-sw-charcoal">
+          <KeyRound className="h-4 w-4 text-primary" /> Password
+        </h2>
+        <div className="mt-4 grid gap-4 sm:grid-cols-2">
+          <div className="space-y-1.5">
+            <Label htmlFor="acc-new-password">New password</Label>
+            <Input
+              id="acc-new-password"
+              type="password"
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+              placeholder="••••••••"
+              minLength={6}
+            />
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="acc-confirm-password">Confirm new password</Label>
+            <Input
+              id="acc-confirm-password"
+              type="password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              placeholder="••••••••"
+              minLength={6}
+            />
+          </div>
+        </div>
+        <div className="mt-4 flex justify-end">
+          <Button
+            variant="green"
+            disabled={savingPassword || !newPassword || !confirmPassword}
+            onClick={savePassword}
+          >
+            {savingPassword ? <Loader2 className="h-4 w-4 animate-spin" /> : "Update password"}
+          </Button>
+        </div>
+      </div>
+
+      {/* Notifications */}
+      <div className="mt-6 rounded-2xl border border-border bg-card p-6">
+        <h2 className="flex items-center gap-2 font-bold text-sw-charcoal">
+          <Bell className="h-4 w-4 text-primary" /> Notifications
+        </h2>
+        <p className="mt-1 text-sm text-muted-foreground">
+          These control mysplitwise&apos;s in-app notification bell only — there&apos;s no
+          email or push notifications yet.
+        </p>
+        <div className="mt-4 divide-y divide-border/60">
+          {NOTIFICATION_TYPES.map((n) => (
+            <div key={n.key} className="flex items-center justify-between gap-4 py-3 first:pt-0 last:pb-0">
+              <div>
+                <p className="text-sm font-semibold text-sw-charcoal">{n.label}</p>
+                <p className="text-xs text-muted-foreground">{n.hint}</p>
+              </div>
+              <Switch
+                checked={notificationPrefs[n.key] !== false}
+                onCheckedChange={(checked) => updateNotificationPrefs({ [n.key]: checked })}
+              />
+            </div>
+          ))}
         </div>
       </div>
 
@@ -329,6 +462,13 @@ export function AccountView() {
             onClick={() => fileRef.current?.click()}
           >
             <Upload className="h-4 w-4" /> Restore from file
+          </Button>
+          <Button
+            variant="outline"
+            className="gap-2"
+            onClick={() => openModal({ kind: "importCsv" })}
+          >
+            <FileSpreadsheet className="h-4 w-4" /> Import from CSV
           </Button>
           <Button
             variant="ghost"

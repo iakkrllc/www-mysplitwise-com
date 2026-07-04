@@ -235,3 +235,13 @@ alter table profiles
     'MSW-' || upper(substr(replace(id::text, '-', ''), 1, 8))
   ) stored;
 create unique index profiles_support_id_idx on profiles (support_id);
+
+-- Feature: account page phone number + per-notification-type preferences.
+-- phone is only ever set after a real Supabase Auth phone-change OTP
+-- confirmation (mirrors how profiles.email is trustworthy today — never an
+-- arbitrary unverified string). notification_prefs defaults to an empty
+-- object so the client can fill in missing keys as "on" without a schema
+-- change every time a new notification type is added. Run once.
+alter table profiles
+  add column phone text,
+  add column notification_prefs jsonb not null default '{}'::jsonb;

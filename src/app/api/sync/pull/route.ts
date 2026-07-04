@@ -163,6 +163,7 @@ export async function GET(req: NextRequest) {
       baseCurrency: ownProfile.base_currency,
       onboarded: ownProfile.onboarded,
       notificationsReadAt: ownProfile.notifications_read_at ?? undefined,
+      notificationPrefs: ownProfile.notification_prefs ?? {},
       users,
       groups,
       expenses,

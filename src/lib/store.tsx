@@ -33,14 +33,16 @@ import {
   addSettlementsApi,
   type PullResponse,
 } from "./sync-api";
-import type {
-  AppState,
-  Expense,
-  ExpenseTemplate,
-  Group,
-  GroupType,
-  RecurringExpense,
-  User,
+import {
+  DEFAULT_NOTIFICATION_PREFS,
+  type AppState,
+  type Expense,
+  type ExpenseTemplate,
+  type Group,
+  type GroupType,
+  type NotificationPrefs,
+  type RecurringExpense,
+  type User,
 } from "./types";
 
 // mysplitwise stores expenses/friends/groups on the server (Supabase) —
@@ -76,6 +78,10 @@ function migrate(s: Partial<AppState> & Record<string, unknown>): AppState {
     templates: (s.templates as ExpenseTemplate[]) ?? [],
     notificationsReadAt: s.notificationsReadAt as string | undefined,
     onboarded: (s.onboarded as boolean | undefined) ?? true,
+    notificationPrefs: {
+      ...DEFAULT_NOTIFICATION_PREFS,
+      ...(s.notificationPrefs as Partial<NotificationPrefs> | undefined),
+    },
   };
 }
 
@@ -144,7 +150,7 @@ interface StoreContextValue {
   loaded: boolean;
   view: View;
   setView: (v: View) => void;
-  currentUser: User;
+  currentUser: User & { notificationPrefs: NotificationPrefs };
   /** All expenses converted to the app's base currency (for balance math). */
   baseExpenses: Expense[];
   // selectors
@@ -163,6 +169,7 @@ interface StoreContextValue {
   updateUser: (id: string, patch: Partial<User>) => void;
   setBaseCurrency: (code: string) => void;
   setNotificationsRead: () => void;
+  updateNotificationPrefs: (patch: Partial<NotificationPrefs>) => void;
   addComment: (expenseId: string, text: string) => void;
   addRecurring: (r: Omit<RecurringExpense, "id" | "createdAt">) => string;
   updateRecurring: (id: string, patch: Partial<RecurringExpense>) => void;
@@ -220,6 +227,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       baseCurrency: pulled.baseCurrency,
       onboarded: pulled.onboarded,
       notificationsReadAt: pulled.notificationsReadAt,
+      notificationPrefs: { ...DEFAULT_NOTIFICATION_PREFS, ...pulled.notificationPrefs },
       users: pulled.users,
       groups: pulled.groups,
       expenses: pulled.expenses,
@@ -332,11 +340,12 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     [state.groups],
   );
 
-  const currentUser = useMemo(
-    () =>
-      state.users.find((u) => u.id === state.currentUserId) ?? state.users[0],
-    [state.users, state.currentUserId],
-  );
+  const currentUser = useMemo(() => {
+    const base = state.users.find((u) => u.id === state.currentUserId) ?? state.users[0];
+    return base
+      ? { ...base, notificationPrefs: { ...DEFAULT_NOTIFICATION_PREFS, ...state.notificationPrefs } }
+      : base;
+  }, [state.users, state.currentUserId, state.notificationPrefs]);
 
   const baseExpenses = useMemo(
     () => toBaseExpenses(state.expenses, state.baseCurrency),
@@ -550,6 +559,20 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       setState((s) => ({ ...s, notificationsReadAt: now }));
       updateProfileApi(authUserId, { notificationsReadAt: now }).catch(() => {});
     }, [authUserId]);
+
+  const updateNotificationPrefs: StoreContextValue["updateNotificationPrefs"] =
+    useCallback(
+      (patch) => {
+        setState((s) => {
+          const merged = { ...DEFAULT_NOTIFICATION_PREFS, ...s.notificationPrefs, ...patch };
+          updateProfileApi(authUserId, { notificationPrefs: merged }).catch(() => {
+            toast.error("Couldn't save your notification preferences");
+          });
+          return { ...s, notificationPrefs: merged };
+        });
+      },
+      [authUserId],
+    );
 
   const addComment: StoreContextValue["addComment"] = useCallback(
     (expenseId, text) => {
@@ -874,6 +897,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     updateUser,
     setBaseCurrency,
     setNotificationsRead,
+    updateNotificationPrefs,
     addComment,
     addRecurring,
     updateRecurring,
