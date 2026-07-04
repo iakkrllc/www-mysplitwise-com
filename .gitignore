@@ -53,6 +53,7 @@ android-app/.gradle/
 android-app/local.properties
 android-app/secrets.properties
 android-app/hs_err_pid*.log
+android-app/replay_pid*.log
 ios-app/MysplitwiseApp.xcodeproj/
 ios-app/MysplitwiseCore/.build/
 ios-app/MysplitwiseCore/.swiftpm/
